@@ -1,0 +1,22 @@
+# Gradle
+.gradle/
+build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.cxx/
+
+# Local configuration (SDK path, never commit)
+local.properties
+
+# Keystores y secretos (el keystore canonico vive fuera del repo, en ../secrets/)
+*.jks
+*.keystore
+keystore*.txt
+google-services.json
+
+# OS
+.DS_Store
+Thumbs.db
