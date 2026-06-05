@@ -1,9 +1,24 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
+
+// Credenciales de firma del release. Orden de fuentes: variables de entorno (CI) ->
+// keystore.properties en la raiz (gitignored, para builds locales). NUNCA se commitea el
+// keystore ni las contrasenas. Si falta alguna, el release queda sin firmar (no rompe a quien
+// no tiene la llave). Claves esperadas: storeFile, storePassword, keyAlias, keyPassword.
+val releaseKeystoreProps: Properties = Properties().apply {
+    val propsFile = rootProject.file("keystore.properties")
+    if (propsFile.exists()) FileInputStream(propsFile).use { load(it) }
+}
+
+fun signingValue(env: String, prop: String): String? =
+    System.getenv(env) ?: releaseKeystoreProps.getProperty(prop)
 
 android {
     namespace = "com.eddndev.purpura"
@@ -26,11 +41,28 @@ android {
         )
     }
 
+    signingConfigs {
+        create("release") {
+            val storeFilePath = signingValue("RELEASE_STORE_FILE", "storeFile")
+            val storePass = signingValue("RELEASE_STORE_PASSWORD", "storePassword")
+            val alias = signingValue("RELEASE_KEY_ALIAS", "keyAlias")
+            val keyPass = signingValue("RELEASE_KEY_PASSWORD", "keyPassword")
+            if (storeFilePath != null && storePass != null && alias != null && keyPass != null) {
+                storeFile = rootProject.file(storeFilePath)
+                storePassword = storePass
+                keyAlias = alias
+                keyPassword = keyPass
+            }
+        }
+    }
+
     buildTypes {
         debug {
             isDebuggable = true
         }
         release {
+            // Firma con la config release solo si hay credenciales; si no, queda sin firmar.
+            signingConfig = signingConfigs.getByName("release").takeIf { it.storeFile != null }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
