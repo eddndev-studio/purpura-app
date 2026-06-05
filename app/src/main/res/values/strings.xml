@@ -58,4 +58,30 @@
     <string name="exit_message">¿Seguro que quieres salir de la aplicación?</string>
     <string name="exit_confirm">Salir</string>
     <string name="exit_cancel">Cancelar</string>
+
+    <!-- Autenticacion -->
+    <string name="auth_subtitle">Organiza tus eventos. Inicia sesión para continuar.</string>
+    <string name="auth_email">Correo</string>
+    <string name="auth_password">Contraseña</string>
+    <string name="auth_name">Nombre</string>
+    <string name="auth_login">Iniciar sesión</string>
+    <string name="auth_register">Registrarme</string>
+    <string name="auth_toggle_to_register">¿No tienes cuenta? Regístrate</string>
+    <string name="auth_toggle_to_login">¿Ya tienes cuenta? Inicia sesión</string>
+    <string name="auth_or">o</string>
+    <string name="auth_google">Continuar con Google</string>
+    <string name="auth_error_empty_fields">Completa todos los campos.</string>
+    <string name="auth_google_cancelled">No se completó el inicio de sesión con Google.</string>
+
+    <!-- Mensajes de error de dominio (06-app-architecture §11) -->
+    <string name="error_network">Sin conexión. Revisa tu internet e intenta de nuevo.</string>
+    <string name="error_validation">Revisa los datos e intenta de nuevo.</string>
+    <string name="error_event_not_found">El evento ya no existe.</string>
+    <string name="error_email_taken">Ese correo ya está registrado.</string>
+    <string name="error_invalid_credential">Correo o contraseña incorrectos.</string>
+    <string name="error_unauthorized">Tu sesión expiró. Inicia sesión de nuevo.</string>
+    <string name="error_unexpected">Ocurrió un error. Intenta más tarde.</string>
+
+    <!-- OAuth: client id Web (publico, no es secreto). Es el audience del idToken. -->
+    <string name="server_client_id" translatable="false">192602671268-t21fn2svpmep9evedhac8i6t79e4nkqb.apps.googleusercontent.com</string>
 </resources>
