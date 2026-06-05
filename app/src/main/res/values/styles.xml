@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Formas. PILL = capsula (cornerSize 50%) -->
+    <style name="ShapeAppearance.Purpura.Pill" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="ShapeAppearance.Purpura.Medium" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+    <style name="ShapeAppearance.Purpura.Large" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+    <style name="ShapeAppearanceOverlay.Purpura.Pill" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Widgets con borde pill (REQ-NFR-006) -->
+    <style name="Widget.Purpura.Button" parent="Widget.Material3.Button">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Purpura.Pill</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+    <style name="Widget.Purpura.Chip" parent="Widget.Material3.Chip.Filter">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Purpura.Pill</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+    <style name="Widget.Purpura.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">28dp</item>
+        <item name="boxCornerRadiusTopEnd">28dp</item>
+        <item name="boxCornerRadiusBottomStart">28dp</item>
+        <item name="boxCornerRadiusBottomEnd">28dp</item>
+    </style>
+    <style name="Widget.Purpura.FAB" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Purpura.Pill</item>
+    </style>
+    <!-- Card de evento: superficie, NO pill -->
+    <style name="Widget.Purpura.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Purpura.Medium</item>
+        <item name="cardElevation">@dimen/elevation_card</item>
+    </style>
+</resources>

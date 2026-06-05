@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Roles M3 (oscuro), mismos nombres de token -->
+    <color name="purpura_primary">#D0BCFF</color>
+    <color name="purpura_on_primary">#3A0E55</color>
+    <color name="purpura_primary_container">#542A77</color>
+    <color name="purpura_on_primary_container">#EBDCF2</color>
+    <color name="purpura_secondary">#D8B9E6</color>
+    <color name="purpura_on_secondary">#3A0E55</color>
+    <color name="purpura_secondary_container">#5A3A6E</color>
+    <color name="purpura_on_secondary_container">#EFDBFF</color>
+    <color name="purpura_tertiary">#FFB0CC</color>
+    <color name="purpura_on_tertiary">#5E1136</color>
+    <color name="purpura_tertiary_container">#7B2A4E</color>
+    <color name="purpura_on_tertiary_container">#FFD9E8</color>
+    <color name="purpura_error">#F2B8B5</color>
+    <color name="purpura_on_error">#601410</color>
+    <color name="purpura_error_container">#8C1D18</color>
+    <color name="purpura_on_error_container">#F9DEDC</color>
+    <color name="purpura_background">#1C1B1F</color>
+    <color name="purpura_on_background">#E6E0E9</color>
+    <color name="purpura_surface">#1C1B1F</color>
+    <color name="purpura_on_surface">#E6E0E9</color>
+    <color name="purpura_surface_variant">#49454F</color>
+    <color name="purpura_on_surface_variant">#CAC4D0</color>
+    <color name="purpura_surface_container">#2B2930</color>
+    <color name="purpura_outline">#948F99</color>
+    <color name="purpura_outline_variant">#49454F</color>
+    <color name="purpura_on_brand_subtle">#EFDBFF</color>
+    <color name="purpura_status_bar">#1C1B1F</color>
+
+    <color name="status_pendiente">#F2C94C</color>
+    <color name="status_pendiente_container">#4A3B00</color>
+    <color name="status_realizado">#A5D6A7</color>
+    <color name="status_realizado_container">#143D17</color>
+    <color name="status_aplazado">#C4C7CC</color>
+    <color name="status_aplazado_container">#3A3D42</color>
+
+    <color name="event_cita">#D0BCFF</color>
+    <color name="event_junta">#B6C4FF</color>
+    <color name="event_entrega_proyecto">#7DDBCB</color>
+    <color name="event_examen">#FFB0CC</color>
+    <color name="event_otros">#CAC4D0</color>
+
+    <color name="heatmap_0">#2A2630</color>
+    <color name="heatmap_1">#3F2A57</color>
+    <color name="heatmap_2">#5A2A87</color>
+    <color name="heatmap_3">#7B2AB8</color>
+    <color name="heatmap_4">#A85CE0</color>
+</resources>

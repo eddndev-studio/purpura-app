@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Purpura" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/purpura_primary</item>
+        <item name="colorOnPrimary">@color/purpura_on_primary</item>
+        <item name="colorPrimaryContainer">@color/purpura_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/purpura_on_primary_container</item>
+        <item name="colorSecondary">@color/purpura_secondary</item>
+        <item name="colorOnSecondary">@color/purpura_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/purpura_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/purpura_on_secondary_container</item>
+        <item name="colorTertiary">@color/purpura_tertiary</item>
+        <item name="colorOnTertiary">@color/purpura_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/purpura_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/purpura_on_tertiary_container</item>
+        <item name="colorError">@color/purpura_error</item>
+        <item name="colorOnError">@color/purpura_on_error</item>
+        <item name="colorErrorContainer">@color/purpura_error_container</item>
+        <item name="colorOnErrorContainer">@color/purpura_on_error_container</item>
+        <item name="android:colorBackground">@color/purpura_background</item>
+        <item name="colorOnBackground">@color/purpura_on_background</item>
+        <item name="colorSurface">@color/purpura_surface</item>
+        <item name="colorOnSurface">@color/purpura_on_surface</item>
+        <item name="colorSurfaceVariant">@color/purpura_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/purpura_on_surface_variant</item>
+        <item name="colorOutline">@color/purpura_outline</item>
+        <item name="colorOutlineVariant">@color/purpura_outline_variant</item>
+        <item name="android:statusBarColor">@color/purpura_status_bar</item>
+
+        <!-- Forma global -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Purpura.Pill</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Purpura.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Purpura.Large</item>
+
+        <!-- Estilos por defecto pill -->
+        <item name="materialButtonStyle">@style/Widget.Purpura.Button</item>
+        <item name="chipStyle">@style/Widget.Purpura.Chip</item>
+        <item name="textInputStyle">@style/Widget.Purpura.TextInputLayout</item>
+        <item name="floatingActionButtonStyle">@style/Widget.Purpura.FAB</item>
+    </style>
+</resources>
