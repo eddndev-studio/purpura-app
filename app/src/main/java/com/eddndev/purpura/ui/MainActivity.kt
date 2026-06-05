@@ -10,11 +10,13 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import com.eddndev.purpura.R
 import com.eddndev.purpura.databinding.ActivityMainBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
 
 // Unica Activity (single-activity). Hospeda el andamiaje: DrawerLayout + Toolbar +
 // NavHostFragment + BottomNavigationView + NavigationView. El drawer (7) y el bottom
 // nav (3) conducen al mismo NavController; "Consultar" y "Salir" se comportan igual
 // desde ambas superficies (REQ-NAV-003).
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
