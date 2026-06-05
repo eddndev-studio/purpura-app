@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 import javax.inject.Inject
 
 // Orquesta remoto (Retrofit) + cache (Room) aplicando la politica offline (06-app §9):
@@ -56,8 +56,20 @@ class EventRepositoryImpl @Inject constructor(
     override suspend fun refreshRange(from: LocalDate, to: LocalDate) {
         withContext(io) {
             errorAdapter.call {
+                // tz = zona del dispositivo para que la API evalue [from, to] como dias de
+                // calendario LOCALES (no UTC); asi coincide con la ventana y los bounds de Room.
+                // TODO(#8): la ventana de Inicio cabe en una pagina (MAX_PAGE=100); si una consulta
+                // amplia pudiera exceder 100 habria que paginar leyendo response.pagination.
                 val response = eventApi.query(
-                    buildParams(EventQuery(mode = QueryMode.por_rango, from = from, to = to, pageSize = MAX_PAGE)),
+                    buildParams(
+                        EventQuery(
+                            mode = QueryMode.por_rango,
+                            from = from,
+                            to = to,
+                            pageSize = MAX_PAGE,
+                            tz = ZoneId.systemDefault().id,
+                        ),
+                    ),
                 )
                 eventDao.upsertAll(response.data.map { entityMapper.toEntity(remoteMapper.toDomain(it)) })
             }
@@ -142,11 +154,13 @@ class EventRepositoryImpl @Inject constructor(
         query.tz?.let { put("tz", it) }
     }
 
+    // Bounds en la zona del dispositivo: el limite inferior es la medianoche LOCAL de `date`, de
+    // modo que la lectura del cache coincida con la ventana que ve el usuario y con formatWhen.
     private fun startOfDayMs(date: LocalDate): Long =
-        date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+        date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
     private fun endOfDayMs(date: LocalDate): Long =
-        date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli() - 1
+        date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() - 1
 
     private companion object {
         const val MAX_PAGE = 100

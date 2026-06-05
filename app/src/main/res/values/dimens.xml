@@ -10,6 +10,8 @@
     <dimen name="screen_margin_horizontal">16dp</dimen>
     <dimen name="screen_padding_top">16dp</dimen>
     <dimen name="list_item_spacing">8dp</dimen>
+    <!-- Holgura inferior de listas para que el ultimo item libre el FAB extendido (alto + margenes) -->
+    <dimen name="list_fab_clearance">88dp</dimen>
     <dimen name="touch_target_min">48dp</dimen>
     <dimen name="toolbar_height">56dp</dimen>
     <dimen name="bottom_nav_height">80dp</dimen>

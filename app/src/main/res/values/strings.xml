@@ -73,6 +73,24 @@
     <string name="auth_error_empty_fields">Completa todos los campos.</string>
     <string name="auth_google_cancelled">No se completó el inicio de sesión con Google.</string>
 
+    <!-- Inicio: lista de próximos eventos (REQ-HOME-001) -->
+    <string name="home_list_desc">Lista de tus próximos eventos</string>
+    <string name="home_event_when">%1$s · %2$s</string>
+    <string name="day_today">Hoy</string>
+    <string name="day_tomorrow">Mañana</string>
+
+    <!-- Etiquetas de tipo de evento (UI en español; el código del dominio es ASCII) -->
+    <string name="event_type_cita">Cita</string>
+    <string name="event_type_junta">Junta</string>
+    <string name="event_type_entrega_proyecto">Entrega de proyecto</string>
+    <string name="event_type_examen">Examen</string>
+    <string name="event_type_otros">Otros</string>
+
+    <!-- Etiquetas de estatus de evento -->
+    <string name="event_status_pendiente">Pendiente</string>
+    <string name="event_status_realizado">Realizado</string>
+    <string name="event_status_aplazado">Aplazado</string>
+
     <!-- Mensajes de error de dominio (06-app-architecture §11) -->
     <string name="error_network">Sin conexión. Revisa tu internet e intenta de nuevo.</string>
     <string name="error_validation">Revisa los datos e intenta de nuevo.</string>
