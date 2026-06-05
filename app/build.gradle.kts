@@ -16,14 +16,30 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Base URL de la API Go (debe terminar en /). Debug apunta al loopback del host del
+        // emulador (10.0.2.2); release al backend desplegado en vps2.
+        buildConfigField(
+            "String",
+            "API_BASE_URL",
+            "\"http://10.0.2.2:8080/api/v1/\"",
+        )
     }
 
     buildTypes {
+        debug {
+            isDebuggable = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
+            )
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"https://api.purpura.eddndev.studio/api/v1/\"",
             )
         }
     }
@@ -39,6 +55,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
