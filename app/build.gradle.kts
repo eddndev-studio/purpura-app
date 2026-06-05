@@ -18,7 +18,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Base URL de la API Go (debe terminar en /). Debug apunta al loopback del host del
-        // emulador (10.0.2.2); release al backend desplegado en vps2.
+        // emulador (10.0.2.2): requiere el backend corriendo localmente para probar en vivo.
         buildConfigField(
             "String",
             "API_BASE_URL",
@@ -36,10 +36,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            // TODO(#8): URL placeholder. Reemplazar por el dominio real cuando se despliegue
+            // el backend en vps2 (el deploy esta escrito pero aun no ejecutado).
             buildConfigField(
                 "String",
                 "API_BASE_URL",
-                "\"https://api.purpura.eddndev.studio/api/v1/\"",
+                "\"https://api.purpura.example/api/v1/\"",
             )
         }
     }
