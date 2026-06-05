@@ -20,6 +20,17 @@ val releaseKeystoreProps: Properties = Properties().apply {
 fun signingValue(env: String, prop: String): String? =
     System.getenv(env) ?: releaseKeystoreProps.getProperty(prop)
 
+// Versionado: en los releases por tag, el CI inyecta APP_VERSION_NAME / APP_VERSION_CODE
+// derivados del propio tag (el tag vX.Y.Z es la UNICA fuente de verdad, ver release.yml). En
+// builds locales y en el CI de debug no estan definidas y se usan estos defaults. Asi el nombre
+// del Release, el archivo y la versionName/versionCode dentro del APK nunca se desincronizan.
+val defaultVersionName = "0.1.0"
+val defaultVersionCode = 1
+val appVersionName: String = System.getenv("APP_VERSION_NAME")?.takeIf { it.isNotBlank() }
+    ?: defaultVersionName
+val appVersionCode: Int = System.getenv("APP_VERSION_CODE")?.toIntOrNull()
+    ?: defaultVersionCode
+
 android {
     namespace = "com.eddndev.purpura"
     compileSdk = 34
@@ -28,8 +39,8 @@ android {
         applicationId = "com.eddndev.purpura"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Base URL de la API Go (debe terminar en /). Debug apunta al loopback del host del
