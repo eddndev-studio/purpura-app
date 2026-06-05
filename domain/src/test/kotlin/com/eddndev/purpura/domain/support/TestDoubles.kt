@@ -84,6 +84,8 @@ class FakeEventRepository : EventRepository {
     val patches = mutableListOf<Pair<String, EventPatch>>()
     val deletedIds = mutableListOf<String>()
     var lastUpcomingArgs: Pair<LocalDate, Int>? = null
+    var lastRefreshRange: Pair<LocalDate, LocalDate>? = null
+    var refreshRangeCount = 0
     var lastQuery: EventQuery? = null
     var queryCallCount = 0
 
@@ -94,7 +96,10 @@ class FakeEventRepository : EventRepository {
 
     override fun observeMonth(year: Int, month: Int): Flow<List<Event>> = monthFlow
 
-    override suspend fun refreshRange(from: LocalDate, to: LocalDate) = Unit
+    override suspend fun refreshRange(from: LocalDate, to: LocalDate) {
+        refreshRangeCount++
+        lastRefreshRange = from to to
+    }
 
     override suspend fun query(query: EventQuery): Page<Event> {
         queryCallCount++
