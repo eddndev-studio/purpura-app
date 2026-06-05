@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Purpura</string>
+
+    <!-- Navigation drawer (7 opciones, REQ-NAV-001) -->
+    <string name="nav_add_event">Añadir Eventos</string>
+    <string name="nav_query_events">Consultar y modificación de Eventos</string>
+    <string name="nav_calendar">Mostrar Calendario</string>
+    <string name="nav_backup">Realizar Respaldo en Dropbox o Google Drive</string>
+    <string name="nav_restore">Restaurar datos de Dropbox o Google Drive</string>
+    <string name="nav_about">Acerca de</string>
+    <string name="nav_exit">Salir</string>
+
+    <!-- Bottom navigation (3 opciones, REQ-NAV-002) -->
+    <string name="menu_inicio">Inicio</string>
+    <string name="menu_consultar">Consultar</string>
+    <string name="menu_salir">Salir</string>
+
+    <!-- Drawer header -->
+    <string name="nav_header_name">Purpura</string>
+    <string name="nav_header_email">Organiza tus eventos</string>
+    <string name="open_drawer">Abrir menú de navegación</string>
+    <string name="close_drawer">Cerrar menú de navegación</string>
+
+    <!-- Titulos de pantalla -->
+    <string name="title_home">Inicio</string>
+    <string name="title_add_event">Añadir Evento</string>
+    <string name="title_query">Consultar Eventos</string>
+    <string name="title_calendar">Calendario</string>
+    <string name="title_heatmap">Mapa de calor</string>
+    <string name="title_backup">Respaldo</string>
+    <string name="title_restore">Restaurar</string>
+    <string name="title_about">Acerca de</string>
+    <string name="title_detail">Detalle del evento</string>
+    <string name="title_auth">Bienvenido a Purpura</string>
+
+    <!-- Placeholders del esqueleto (se reemplazan al implementar features) -->
+    <string name="placeholder_home">Aquí aparecerán tus eventos de hoy y los próximos 4 días.</string>
+    <string name="home_empty_title">No tienes eventos próximos</string>
+    <string name="fab_add_event">Añadir Eventos</string>
+    <string name="placeholder_icon_desc">Ilustración de la pantalla</string>
+    <string name="placeholder_add_event">Formulario para crear un evento (tipo, contacto, ubicación, fecha, hora, estatus, recordatorio).</string>
+    <string name="placeholder_query">Consulta por día, rango, mes o año, con filtro por tipo.</string>
+    <string name="placeholder_calendar">Calendario mensual con los días que tienen eventos marcados.</string>
+    <string name="placeholder_heatmap">Densidad de eventos por día (mapa de calor).</string>
+    <string name="placeholder_backup">Respalda todos tus eventos en Dropbox o Google Drive.</string>
+    <string name="placeholder_restore">Restaura tus eventos desde Dropbox o Google Drive.</string>
+    <string name="placeholder_detail">Detalle y edición de un evento.</string>
+    <string name="placeholder_auth">Inicia sesión o regístrate para continuar.</string>
+
+    <!-- Acerca de -->
+    <string name="about_app_name">Purpura</string>
+    <string name="about_version">Versión 0.1.0</string>
+    <string name="about_credits">Organizador de eventos.\nProyecto de Desarrollo de Aplicaciones Móviles Nativas.\nedu. eddndev</string>
+
+    <!-- Salir -->
+    <string name="exit_title">Salir de Purpura</string>
+    <string name="exit_message">¿Seguro que quieres salir de la aplicación?</string>
+    <string name="exit_confirm">Salir</string>
+    <string name="exit_cancel">Cancelar</string>
+</resources>

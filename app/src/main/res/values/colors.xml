@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tonos de marca heredados (escala de tono, sin rol) -->
+    <color name="purple_900">#4A148C</color>
+    <color name="purple_800">#6A1B9A</color>
+    <color name="purple_700">#7B1FA2</color>
+    <color name="purple_500">#9C27B0</color>
+    <color name="purple_300">#BA68C8</color>
+    <color name="purple_200">#CE93D8</color>
+    <color name="purple_accent">#E040FB</color>
+    <color name="purple_bg">#F3E5F5</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- Roles M3 (claro) -->
+    <color name="purpura_primary">#6A1B9A</color>
+    <color name="purpura_on_primary">#FFFFFF</color>
+    <color name="purpura_primary_container">#EBDCF2</color>
+    <color name="purpura_on_primary_container">#4A148C</color>
+    <color name="purpura_secondary">#7B1FA2</color>
+    <color name="purpura_on_secondary">#FFFFFF</color>
+    <color name="purpura_secondary_container">#E9D7F2</color>
+    <color name="purpura_on_secondary_container">#3A0E55</color>
+    <color name="purpura_tertiary">#9A2D63</color>
+    <color name="purpura_on_tertiary">#FFFFFF</color>
+    <color name="purpura_tertiary_container">#FFD9E8</color>
+    <color name="purpura_on_tertiary_container">#3E0021</color>
+    <color name="purpura_error">#B3261E</color>
+    <color name="purpura_on_error">#FFFFFF</color>
+    <color name="purpura_error_container">#F9DEDC</color>
+    <color name="purpura_on_error_container">#410E0B</color>
+    <color name="purpura_background">#F3E5F5</color>
+    <color name="purpura_on_background">#1D1A20</color>
+    <color name="purpura_surface">#FFFBFE</color>
+    <color name="purpura_on_surface">#1D1A20</color>
+    <color name="purpura_surface_variant">#E7E0EB</color>
+    <color name="purpura_on_surface_variant">#49454F</color>
+    <color name="purpura_surface_container">#F4EDF7</color>
+    <color name="purpura_outline">#7A757F</color>
+    <color name="purpura_outline_variant">#CAC4CF</color>
+    <color name="purpura_on_brand_subtle">#E8D5F0</color>
+    <color name="purpura_status_bar">#4A148C</color>
+
+    <!-- Estatus (claro). status_pendiente corregido a #5E4900 (AA normal) -->
+    <color name="status_pendiente">#5E4900</color>
+    <color name="status_pendiente_container">#FFF1C2</color>
+    <color name="status_realizado">#1B5E20</color>
+    <color name="status_realizado_container">#C8E6C9</color>
+    <color name="status_aplazado">#5F6368</color>
+    <color name="status_aplazado_container">#E0E2E5</color>
+
+    <!-- Tipo de evento (claro) -->
+    <color name="event_cita">#6A1B9A</color>
+    <color name="event_cita_container">#EBDCF2</color>
+    <color name="event_junta">#3F51B5</color>
+    <color name="event_junta_container">#DDE1F9</color>
+    <color name="event_entrega_proyecto">#00897B</color>
+    <color name="event_entrega_proyecto_container">#C8EFE9</color>
+    <color name="event_examen">#C2185B</color>
+    <color name="event_examen_container">#FAD7E3</color>
+    <color name="event_otros">#7A757F</color>
+    <color name="event_otros_container">#E7E0EB</color>
+
+    <!-- Heatmap (claro) -->
+    <color name="heatmap_0">#F3E9F7</color>
+    <color name="heatmap_1">#D7B8E8</color>
+    <color name="heatmap_2">#B57EDC</color>
+    <color name="heatmap_3">#8E33C4</color>
+    <color name="heatmap_4">#5C0F8B</color>
+
+    <!-- Utilitarios -->
+    <color name="purpura_scrim">#52000000</color>
+    <color name="purpura_ripple">#1F6A1B9A</color>
+    <color name="purpura_divider">#1F49454F</color>
+    <color name="purpura_disabled_on">#611D1A20</color>
+    <color name="purpura_disabled_container">#1F1D1A20</color>
+
+    <!-- Fondo del icono adaptativo -->
+    <color name="ic_launcher_background">#6A1B9A</color>
+</resources>

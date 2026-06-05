@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/nav_header_height"
+    android:background="@color/purpura_primary"
+    android:gravity="bottom"
+    android:orientation="vertical"
+    android:padding="@dimen/space_md">
+
+    <ImageView
+        android:layout_width="@dimen/avatar_size"
+        android:layout_height="@dimen/avatar_size"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_calendar_month"
+        app:tint="@color/purpura_on_primary"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_sm"
+        android:text="@string/nav_header_name"
+        android:textAppearance="@style/TextAppearance.Purpura.TitleMedium"
+        android:textColor="@color/purpura_on_primary" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/nav_header_email"
+        android:textAppearance="@style/TextAppearance.Purpura.BodyMedium"
+        android:textColor="@color/purpura_on_brand_subtle" />
+</LinearLayout>

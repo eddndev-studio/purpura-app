@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Roles de tipografia M3 (Roboto). Heredan los tamanos/line-height de M3. -->
+    <style name="TextAppearance.Purpura.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall" />
+    <style name="TextAppearance.Purpura.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium" />
+    <style name="TextAppearance.Purpura.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall" />
+    <style name="TextAppearance.Purpura.TitleLarge" parent="TextAppearance.Material3.TitleLarge" />
+    <style name="TextAppearance.Purpura.TitleMedium" parent="TextAppearance.Material3.TitleMedium" />
+    <style name="TextAppearance.Purpura.TitleSmall" parent="TextAppearance.Material3.TitleSmall" />
+    <style name="TextAppearance.Purpura.BodyLarge" parent="TextAppearance.Material3.BodyLarge" />
+    <style name="TextAppearance.Purpura.BodyMedium" parent="TextAppearance.Material3.BodyMedium" />
+    <style name="TextAppearance.Purpura.BodySmall" parent="TextAppearance.Material3.BodySmall" />
+    <style name="TextAppearance.Purpura.LabelLarge" parent="TextAppearance.Material3.LabelLarge" />
+    <style name="TextAppearance.Purpura.LabelMedium" parent="TextAppearance.Material3.LabelMedium" />
+    <style name="TextAppearance.Purpura.LabelSmall" parent="TextAppearance.Material3.LabelSmall" />
+</resources>
