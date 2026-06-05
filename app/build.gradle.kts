@@ -68,12 +68,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            // TODO(#8): URL placeholder. Reemplazar por el dominio real cuando se despliegue
-            // el backend en vps2 (el deploy esta escrito pero aun no ejecutado).
+            // Dominio de produccion (decidido): api.purpura.eddn.dev bajo Cloudflare. Pendiente:
+            // crear el registro DNS (A api.purpura -> vps2, proxied) y desplegar el backend a vps2
+            // para que resuelva en vivo. Debug sigue usando 10.0.2.2 para pruebas locales.
             buildConfigField(
                 "String",
                 "API_BASE_URL",
-                "\"https://api.purpura.example/api/v1/\"",
+                "\"https://api.purpura.eddn.dev/api/v1/\"",
             )
         }
     }
