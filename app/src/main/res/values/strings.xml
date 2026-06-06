@@ -2,6 +2,10 @@
 <resources>
     <string name="app_name">Purpura</string>
 
+    <!-- Acciones genericas reutilizables (dialogos) -->
+    <string name="action_accept">Aceptar</string>
+    <string name="action_cancel">Cancelar</string>
+
     <!-- Navigation drawer (7 opciones, REQ-NAV-001) -->
     <string name="nav_add_event">Añadir Eventos</string>
     <string name="nav_query_events">Consultar y modificación de Eventos</string>
@@ -108,10 +112,16 @@
     <string name="query_status_label">Estatus</string>
     <string name="query_mode_day">Día</string>
     <string name="query_mode_range">Rango</string>
+    <string name="query_mode_month">Mes</string>
+    <string name="query_mode_year">Año</string>
     <string name="query_pick_day">Elegir día</string>
     <string name="query_pick_range">Elegir rango</string>
+    <string name="query_pick_month">Elegir mes</string>
+    <string name="query_pick_year">Elegir año</string>
     <string name="query_date_picker_title">Selecciona una fecha</string>
     <string name="query_range_picker_title">Selecciona un rango</string>
+    <string name="query_month_picker_title">Selecciona un mes</string>
+    <string name="query_year_picker_title">Selecciona un año</string>
     <string name="query_range_format">%1$s – %2$s</string>
     <string name="query_results_desc">Resultados de la consulta</string>
     <string name="query_empty_title">Sin resultados</string>

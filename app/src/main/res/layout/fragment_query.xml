@@ -57,6 +57,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/query_mode_range" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipModeMonth"
+                    style="@style/Widget.Purpura.Chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/query_mode_month" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipModeYear"
+                    style="@style/Widget.Purpura.Chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/query_mode_year" />
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 

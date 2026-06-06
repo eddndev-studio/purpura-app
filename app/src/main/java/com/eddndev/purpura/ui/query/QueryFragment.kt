@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -52,6 +53,13 @@ class QueryFragment : Fragment() {
     private var selectedDate: LocalDate? = null
     private var selectedFrom: LocalDate? = null
     private var selectedTo: LocalDate? = null
+    // Mes/Ano (REQ-QUERY-005..006): el modo Mes usa ambos; el modo Ano solo el ano.
+    private var selectedYear: Int? = null
+    private var selectedMonth: Int? = null
+
+    // Dialogo de Mes/Ano abierto: no es un DialogFragment, asi que lo descartamos en onDestroyView
+    // para no filtrar la ventana al rotar (ese dismiss programatico no dispara onCancel, ver picker).
+    private var periodDialog: AlertDialog? = null
 
     // Suprime la reaccion a cambios de chip cuando NO los origina el usuario: al revertir un chip
     // por codigo (cancelar el selector) y durante la restauracion de la vista (rotacion / muerte de
@@ -110,6 +118,8 @@ class QueryFragment : Fragment() {
         selectedDate = filters.date
         selectedFrom = filters.from
         selectedTo = filters.to
+        selectedYear = filters.year
+        selectedMonth = filters.month
         when (binding.modeChipGroup.checkedChipId) {
             R.id.chipModeDay -> {
                 binding.dateButton.isVisible = true
@@ -128,6 +138,20 @@ class QueryFragment : Fragment() {
                     getString(R.string.query_pick_range)
                 }
             }
+            R.id.chipModeMonth -> {
+                binding.dateButton.isVisible = true
+                val year = selectedYear
+                val month = selectedMonth
+                binding.dateButton.text = if (year != null && month != null) {
+                    MonthYearPicker.label(year, month)
+                } else {
+                    getString(R.string.query_pick_month)
+                }
+            }
+            R.id.chipModeYear -> {
+                binding.dateButton.isVisible = true
+                binding.dateButton.text = selectedYear?.toString() ?: getString(R.string.query_pick_year)
+            }
             else -> binding.dateButton.isVisible = false
         }
     }
@@ -144,6 +168,16 @@ class QueryFragment : Fragment() {
                 binding.dateButton.isVisible = true
                 openRangePicker()
             }
+            R.id.chipModeMonth -> {
+                binding.dateButton.setText(R.string.query_pick_month)
+                binding.dateButton.isVisible = true
+                openMonthPicker()
+            }
+            R.id.chipModeYear -> {
+                binding.dateButton.setText(R.string.query_pick_year)
+                binding.dateButton.isVisible = true
+                openYearPicker()
+            }
             else -> {
                 binding.dateButton.isVisible = false
                 clearDates()
@@ -156,6 +190,8 @@ class QueryFragment : Fragment() {
         when (binding.modeChipGroup.checkedChipId) {
             R.id.chipModeDay -> openSingleDatePicker()
             R.id.chipModeRange -> openRangePicker()
+            R.id.chipModeMonth -> openMonthPicker()
+            R.id.chipModeYear -> openYearPicker()
         }
     }
 
@@ -199,6 +235,37 @@ class QueryFragment : Fragment() {
         picker.show(parentFragmentManager, PICKER_TAG)
     }
 
+    private fun openMonthPicker() {
+        val today = LocalDate.now()
+        periodDialog = MonthYearPicker.showMonth(
+            context = requireContext(),
+            initialYear = selectedYear ?: today.year,
+            initialMonth = selectedMonth ?: today.monthValue,
+            onPicked = { year, month ->
+                selectedYear = year
+                selectedMonth = month
+                binding.dateButton.text = MonthYearPicker.label(year, month)
+                applyFilters()
+            },
+            onCancel = ::revertToAllIfNoMonth,
+        )
+    }
+
+    private fun openYearPicker() {
+        val today = LocalDate.now()
+        periodDialog = MonthYearPicker.showYear(
+            context = requireContext(),
+            initialYear = selectedYear ?: today.year,
+            onPicked = { year ->
+                selectedYear = year
+                selectedMonth = null
+                binding.dateButton.text = year.toString()
+                applyFilters()
+            },
+            onCancel = ::revertToAllIfNoYear,
+        )
+    }
+
     // Si el usuario abrio el selector pero no habia una fecha previa y cancelo, volvemos a Todos
     // para no dejar el modo activo sin fecha.
     private fun revertToAllIfNoDay() {
@@ -207,6 +274,14 @@ class QueryFragment : Fragment() {
 
     private fun revertToAllIfNoRange() {
         if (selectedFrom == null || selectedTo == null) checkModeAll()
+    }
+
+    private fun revertToAllIfNoMonth() {
+        if (selectedYear == null || selectedMonth == null) checkModeAll()
+    }
+
+    private fun revertToAllIfNoYear() {
+        if (selectedYear == null) checkModeAll()
     }
 
     private fun checkModeAll() {
@@ -222,6 +297,8 @@ class QueryFragment : Fragment() {
         selectedDate = null
         selectedFrom = null
         selectedTo = null
+        selectedYear = null
+        selectedMonth = null
     }
 
     private fun applyFilters() {
@@ -229,6 +306,8 @@ class QueryFragment : Fragment() {
         val mode = when (binding.modeChipGroup.checkedChipId) {
             R.id.chipModeDay -> if (selectedDate != null) QueryMode.por_dia else null
             R.id.chipModeRange -> if (selectedFrom != null && selectedTo != null) QueryMode.por_rango else null
+            R.id.chipModeMonth -> if (selectedYear != null && selectedMonth != null) QueryMode.por_mes else null
+            R.id.chipModeYear -> if (selectedYear != null) QueryMode.por_anio else null
             else -> null
         }
         viewModel.search(
@@ -239,6 +318,8 @@ class QueryFragment : Fragment() {
                 date = selectedDate.takeIf { mode == QueryMode.por_dia },
                 from = selectedFrom.takeIf { mode == QueryMode.por_rango },
                 to = selectedTo.takeIf { mode == QueryMode.por_rango },
+                year = selectedYear.takeIf { mode == QueryMode.por_mes || mode == QueryMode.por_anio },
+                month = selectedMonth.takeIf { mode == QueryMode.por_mes },
             ),
         )
     }
@@ -297,6 +378,8 @@ class QueryFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        periodDialog?.dismiss()
+        periodDialog = null
         binding.resultsRecycler.adapter = null
         _binding = null
     }
