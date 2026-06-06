@@ -130,6 +130,12 @@
     <string name="detail_load_error_title">No se pudo cargar el evento</string>
     <string name="detail_retry">Reintentar</string>
 
+    <!-- Calendario mensual (REQ-CAL-001..003) -->
+    <string name="calendar_prev_month">Mes anterior</string>
+    <string name="calendar_next_month">Mes siguiente</string>
+    <string name="calendar_grid_desc">Calendario del mes</string>
+    <string name="calendar_day_empty">Sin eventos este día.</string>
+
     <!-- Anadir evento: formulario (REQ-ADD-001..009) -->
     <string name="add_event_description_label">Descripción</string>
     <string name="add_event_contact_label">Contacto</string>

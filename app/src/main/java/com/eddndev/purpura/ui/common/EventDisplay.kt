@@ -9,6 +9,7 @@ import com.eddndev.purpura.domain.model.EventType
 import com.eddndev.purpura.domain.model.Reminder
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -22,6 +23,7 @@ object EventDisplay {
     private val TIME = DateTimeFormatter.ofPattern("HH:mm", LOCALE)
     private val DATE = DateTimeFormatter.ofPattern("EEE d MMM", LOCALE)
     private val FULL_DATE = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM yyyy", LOCALE)
+    private val MONTH_YEAR = DateTimeFormatter.ofPattern("MMMM yyyy", LOCALE)
 
     @StringRes
     fun typeLabel(type: EventType): Int = when (type) {
@@ -93,6 +95,14 @@ object EventDisplay {
     // "15:30" en la zona del dispositivo.
     fun formatTime(startsAt: Instant): String =
         startsAt.atZone(ZoneId.systemDefault()).format(TIME)
+
+    // "Junio 2026" para el encabezado del Calendario / Mapa de calor.
+    fun formatMonth(yearMonth: YearMonth): String =
+        yearMonth.format(MONTH_YEAR).replaceFirstChar { it.titlecase(LOCALE) }
+
+    // "Viernes 12 de junio 2026" para el dia seleccionado del Calendario (a partir de una fecha).
+    fun formatFullDate(date: LocalDate): String =
+        date.format(FULL_DATE).replaceFirstChar { it.titlecase(LOCALE) }
 
     @StringRes
     fun reminderLabel(reminder: Reminder): Int = when (reminder) {

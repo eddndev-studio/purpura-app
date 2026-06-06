@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Calendario mensual (REQ-CAL-001..003): barra de navegacion de mes, encabezado de dias de la
+     semana, rejilla de dias con puntos por tipo, y la lista de eventos del dia seleccionado.
+     Solo la lista inferior hace scroll; la rejilla es wrap_content + nestedScrollingEnabled=false
+     para no anidar dos scrolls. El padding horizontal del root alinea encabezado y rejilla. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/purpura_background"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/screen_margin_horizontal"
+    android:paddingTop="@dimen/space_sm">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/prevMonthButton"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/calendar_prev_month"
+            android:src="@drawable/ic_chevron_left" />
+
+        <TextView
+            android:id="@+id/monthLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Purpura.TitleLarge"
+            android:textColor="@color/purpura_on_surface"
+            tools:text="Junio 2026" />
+
+        <ImageButton
+            android:id="@+id/nextMonthButton"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/calendar_next_month"
+            android:src="@drawable/ic_chevron_right" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/loadingBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <!-- Encabezado de dias de la semana (se llena en codigo segun el locale). -->
+    <LinearLayout
+        android:id="@+id/weekdayHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:orientation="horizontal" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/calendarRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xxs"
+        android:contentDescription="@string/calendar_grid_desc"
+        android:nestedScrollingEnabled="false"
+        tools:itemCount="35"
+        tools:listitem="@layout/item_calendar_day" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="@dimen/space_sm"
+        android:background="@color/purpura_divider" />
+
+    <TextView
+        android:id="@+id/selectedDayLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Purpura.LabelLarge"
+        android:textColor="@color/purpura_primary"
+        tools:text="Viernes 12 de junio 2026" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/space_xs"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/selectedDayRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/space_md"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_event" />
+
+        <TextView
+            android:id="@+id/emptyDayText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/calendar_day_empty"
+            android:textAppearance="@style/TextAppearance.Purpura.BodyMedium"
+            android:textColor="@color/purpura_on_surface_variant"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </FrameLayout>
+</LinearLayout>

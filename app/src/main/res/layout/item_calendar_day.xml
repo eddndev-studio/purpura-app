@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Celda de un dia del calendario: numero + fila de puntos por tipo. El fondo (seleccionado / hoy)
+     y los puntos se aplican en CalendarDayAdapter. Las celdas vacias de relleno quedan en blanco. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/calendarDayCell"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/space_xxs"
+    android:gravity="center"
+    android:minHeight="@dimen/calendar_cell_min"
+    android:orientation="vertical"
+    android:paddingVertical="@dimen/space_xxs">
+
+    <TextView
+        android:id="@+id/dayNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Purpura.LabelLarge"
+        android:textColor="@color/purpura_on_surface"
+        tools:text="12" />
+
+    <LinearLayout
+        android:id="@+id/dotsRow"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/event_dot_size"
+        android:layout_marginTop="@dimen/space_xxs"
+        android:gravity="center"
+        android:orientation="horizontal" />
+</LinearLayout>

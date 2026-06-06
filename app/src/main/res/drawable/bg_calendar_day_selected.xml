@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fondo del dia seleccionado en el calendario: contenedor de marca redondeado. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/purpura_primary_container" />
+    <corners android:radius="12dp" />
+</shape>
