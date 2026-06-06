@@ -172,4 +172,22 @@ class DetailViewModelTest {
 
         assertEquals(listOf("e1"), repository.getByIdCalls)
     }
+
+    // refresh() NO es idempotente (a diferencia de load): el Detalle lo invoca al volver del
+    // formulario de edicion para reflejar los cambios. Si una "optimizacion" futura le reagregara la
+    // guardia de loadedId, el Detalle quedaria mostrando datos viejos tras editar; este test lo cubre.
+    @Test
+    fun `refresh fuerza una recarga aunque el id no cambie`() = runTest(dispatcher) {
+        repository.event = sampleEvent("e1")
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+        viewModel.load("e1")
+        assertEquals(listOf("e1"), repository.getByIdCalls)
+
+        repository.event = sampleEvent("e1", status = EventStatus.realizado)
+        viewModel.refresh()
+
+        assertEquals(listOf("e1", "e1"), repository.getByIdCalls)
+        assertEquals(EventStatus.realizado, viewModel.uiState.value.event?.status)
+    }
 }

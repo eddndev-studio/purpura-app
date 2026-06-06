@@ -1,6 +1,7 @@
 package com.eddndev.purpura.ui.addevent
 
 import androidx.annotation.StringRes
+import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.domain.model.EventStatus
 import com.eddndev.purpura.domain.model.EventType
 import com.eddndev.purpura.domain.model.Reminder
@@ -28,9 +29,18 @@ data class AddEventInput(
 
 // Estado observable del formulario. Los errores por campo son @StringRes (consistente con los slices
 // de Consultar/Detalle: el ViewModel ya resuelve a recurso). `errorRes` es el aviso general de un
-// solo uso (snackbar); `saved` dispara la navegacion de regreso a Inicio una sola vez.
+// solo uso (snackbar); `saved` dispara la navegacion de regreso una sola vez.
+//
+// Modo edicion (formulario reutilizado desde el Detalle): `editing` lo marca; `isLoadingEvent` cubre
+// la carga del evento a editar y `loadFailed` su fallo (mientras alguno aplica, Guardar va deshabili-
+// tado). `prefill` es el evento cargado, un payload de un solo uso que el Fragment vuelca en los
+// widgets y luego limpia con prefillHandled().
 data class AddEventUiState(
     val isSubmitting: Boolean = false,
+    val editing: Boolean = false,
+    val isLoadingEvent: Boolean = false,
+    val loadFailed: Boolean = false,
+    val prefill: Event? = null,
     @StringRes val descriptionError: Int? = null,
     @StringRes val contactError: Int? = null,
     @StringRes val dateTimeError: Int? = null,

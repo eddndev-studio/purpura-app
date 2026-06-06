@@ -6,9 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -21,6 +23,7 @@ import com.eddndev.purpura.domain.model.EventStatus
 import com.eddndev.purpura.domain.model.Location
 import com.eddndev.purpura.ui.common.ARG_EVENT_ID
 import com.eddndev.purpura.ui.common.EventDisplay
+import com.eddndev.purpura.ui.common.RESULT_EVENT_EDITED
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
@@ -74,11 +77,24 @@ class EventDetailFragment : Fragment() {
                 checkedStatus()?.let(viewModel::changeStatus)
             }
         }
+        binding.editButton.setOnClickListener { openEdit(eventId) }
         binding.deleteButton.setOnClickListener { confirmDelete() }
         binding.retryButton.setOnClickListener { viewModel.retry() }
 
+        // El formulario en modo edicion avisa al guardar; recargamos para reflejar los cambios.
+        setFragmentResultListener(RESULT_EVENT_EDITED) { _, _ -> viewModel.refresh() }
+
         observeState()
         viewModel.load(eventId)
+    }
+
+    // Abre el formulario de Anadir Evento en modo edicion (con el id) reutilizandolo en vez de
+    // duplicarlo. Guarda contra doble navegacion si el Detalle ya no es el destino actual.
+    private fun openEdit(eventId: String) {
+        val controller = findNavController()
+        if (controller.currentDestination?.id == R.id.eventDetailFragment) {
+            controller.navigate(R.id.addEventFragment, bundleOf(ARG_EVENT_ID to eventId))
+        }
     }
 
     private fun observeState() {
@@ -110,6 +126,7 @@ class EventDetailFragment : Fragment() {
         }
 
         val controlsEnabled = !state.isWorking
+        binding.editButton.isEnabled = controlsEnabled
         binding.deleteButton.isEnabled = controlsEnabled
         binding.statusChipGroup.children.forEach { it.isEnabled = controlsEnabled }
 

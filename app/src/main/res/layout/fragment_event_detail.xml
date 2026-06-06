@@ -192,11 +192,21 @@
             </com.google.android.material.chip.ChipGroup>
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/editButton"
+                style="@style/Widget.Purpura.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/detail_edit"
+                app:icon="@drawable/ic_edit"
+                app:shapeAppearance="@style/ShapeAppearance.Purpura.Pill" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/deleteButton"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_xl"
+                android:layout_marginTop="@dimen/space_md"
                 android:text="@string/detail_delete"
                 android:textColor="@color/purpura_error"
                 app:icon="@drawable/ic_logout"

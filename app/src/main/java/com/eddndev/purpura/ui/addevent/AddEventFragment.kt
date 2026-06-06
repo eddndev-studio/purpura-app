@@ -8,12 +8,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -22,9 +24,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.eddndev.purpura.R
 import com.eddndev.purpura.databinding.FragmentAddEventBinding
+import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.domain.model.EventStatus
 import com.eddndev.purpura.domain.model.EventType
 import com.eddndev.purpura.domain.model.Reminder
+import com.eddndev.purpura.ui.common.ARG_EVENT_ID
+import com.eddndev.purpura.ui.common.RESULT_EVENT_EDITED
 import com.eddndev.purpura.ui.location.LocationPickerFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
@@ -35,6 +40,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -59,6 +65,11 @@ class AddEventFragment : Fragment() {
     // Coordenadas elegidas en el selector de mapa (null = el usuario no abrio el mapa).
     private var pickedLat: Double? = null
     private var pickedLng: Double? = null
+
+    // Modo edicion (formulario reutilizado desde el Detalle): se deriva del argumento eventId. Cuando
+    // esta presente, el VM carga el evento y este Fragment vuelca sus valores en los widgets.
+    private var editEventId: String? = null
+    private val isEditMode get() = editEventId != null
 
     // Permiso de notificaciones (API 33+). Se solicita al guardar con un recordatorio activo; si el
     // usuario lo niega, la alarma se programa igual pero no producira aviso visible (decision suya).
@@ -91,7 +102,24 @@ class AddEventFragment : Fragment() {
         binding.descriptionInput.doAfterTextChanged { viewModel.clearFieldErrors() }
         binding.contactInput.doAfterTextChanged { viewModel.clearFieldErrors() }
 
+        // Modo edicion: el id llega como argumento (sobrevive a la recreacion). startEditing es
+        // idempotente, asi que llamarlo en cada onViewCreated no recarga ni re-rellena.
+        editEventId = arguments?.getString(ARG_EVENT_ID)?.takeIf { it.isNotBlank() }
+        editEventId?.let { id ->
+            applyEditModeChrome()
+            viewModel.startEditing(id)
+        }
+
         observeState()
+    }
+
+    // Ajustes visuales del modo edicion: titulo, texto del boton y ocultar el estatus (en edicion el
+    // Detalle es el dueno del estatus via su propio endpoint). Se aplican en cada recreacion.
+    private fun applyEditModeChrome() {
+        binding.saveButton.setText(R.string.add_event_update_action)
+        binding.statusSection.isVisible = false
+        (requireActivity() as? AppCompatActivity)?.supportActionBar?.title =
+            getString(R.string.add_event_edit_title)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
@@ -248,21 +276,61 @@ class AddEventFragment : Fragment() {
     }
 
     private fun render(state: AddEventUiState) {
+        // Prefill de edicion: vuelca el evento cargado en los widgets una sola vez.
+        state.prefill?.let { event ->
+            prefillForm(event)
+            viewModel.prefillHandled()
+        }
+
         binding.descriptionLayout.error = state.descriptionError?.let(::getString)
         binding.contactLayout.error = state.contactError?.let(::getString)
         binding.dateTimeError.isVisible = state.dateTimeError != null
         state.dateTimeError?.let(binding.dateTimeError::setText)
-        binding.savingProgress.isVisible = state.isSubmitting
-        binding.saveButton.isEnabled = !state.isSubmitting
+        // La carga del evento a editar tambien muestra progreso y bloquea Guardar (sin formulario
+        // valido aun); un fallo de carga lo mantiene bloqueado.
+        binding.savingProgress.isVisible = state.isSubmitting || state.isLoadingEvent
+        binding.saveButton.isEnabled = !state.isSubmitting && !state.isLoadingEvent && !state.loadFailed
 
         if (state.saved) {
+            // En edicion avisamos al Detalle para que recargue antes de volver.
+            if (isEditMode) setFragmentResult(RESULT_EVENT_EDITED, Bundle.EMPTY)
             navigateBack()
             return
         }
         state.errorRes?.let { messageRes ->
-            Snackbar.make(binding.root, messageRes, Snackbar.LENGTH_LONG).show()
+            val snackbar = Snackbar.make(binding.root, messageRes, Snackbar.LENGTH_LONG)
+            // Si fallo la carga del evento a editar, ofrecemos reintentar (aun no hay formulario).
+            if (state.loadFailed) {
+                editEventId?.let { id -> snackbar.setAction(R.string.detail_retry) { viewModel.startEditing(id) } }
+            }
+            snackbar.show()
             viewModel.errorShown()
         }
+    }
+
+    // Vuelca el evento en edicion sobre los widgets. La fecha/hora se interpretan en la zona del
+    // dispositivo (igual que al guardar). Las coordenadas solo se marcan si son reales (lat/lng != 0):
+    // los eventos viejos solo-etiqueta conservan asi su comportamiento sin mapa.
+    private fun prefillForm(event: Event) {
+        binding.descriptionInput.setText(event.description)
+        binding.contactInput.setText(event.contact.name)
+        binding.placeInput.setText(event.location.label.orEmpty())
+        binding.checkType(event.type)
+        binding.checkStatus(event.status)
+        binding.checkReminder(event.reminder)
+
+        val zoned = event.startsAt.atZone(ZoneId.systemDefault())
+        selectedDate = zoned.toLocalDate()
+        selectedTime = zoned.toLocalTime()
+        binding.dateButton.text = dateFormat.format(selectedDate)
+        binding.timeButton.text = timeFormat.format(selectedTime)
+
+        if (event.location.lat != 0.0 || event.location.lng != 0.0) {
+            pickedLat = event.location.lat
+            pickedLng = event.location.lng
+            binding.locationSelected.isVisible = true
+        }
+        viewModel.clearFieldErrors()
     }
 
     // Regresa a Inicio una sola vez (guardado contra doble pop si render se reemite).

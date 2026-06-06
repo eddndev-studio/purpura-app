@@ -1,10 +1,15 @@
 package com.eddndev.purpura.ui
 
 import com.eddndev.purpura.domain.error.DomainError
+import com.eddndev.purpura.domain.model.Contact
+import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.domain.model.EventStatus
 import com.eddndev.purpura.domain.model.EventType
+import com.eddndev.purpura.domain.model.Location
 import com.eddndev.purpura.domain.model.Reminder
 import com.eddndev.purpura.domain.usecase.add.AddEventUseCase
+import com.eddndev.purpura.domain.usecase.edit.UpdateEventUseCase
+import com.eddndev.purpura.domain.usecase.query.GetEventUseCase
 import com.eddndev.purpura.ui.addevent.AddEventInput
 import com.eddndev.purpura.ui.addevent.AddEventViewModel
 import com.eddndev.purpura.ui.support.FakeEventRepository
@@ -26,6 +31,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -48,6 +54,8 @@ class AddEventViewModelTest {
 
     private fun buildViewModel() = AddEventViewModel(
         addEvent = AddEventUseCase(repository, scheduler),
+        getEvent = GetEventUseCase(repository),
+        updateEvent = UpdateEventUseCase(repository, scheduler),
     )
 
     private fun validInput(
@@ -208,5 +216,102 @@ class AddEventViewModelTest {
 
         gate.complete(Unit)
         assertEquals(1, repository.createdDrafts.size)
+    }
+
+    // --- Modo edicion (formulario reutilizado desde el Detalle) ---
+
+    @Test
+    fun `startEditing carga el evento y emite el prefill`() = runTest(dispatcher) {
+        repository.event = sampleEvent("e1", status = EventStatus.realizado)
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.startEditing("e1")
+
+        assertEquals(listOf("e1"), repository.getByIdCalls)
+        val state = viewModel.uiState.value
+        assertTrue(state.editing)
+        assertFalse(state.isLoadingEvent)
+        assertFalse(state.loadFailed)
+        assertEquals(sampleEvent("e1", status = EventStatus.realizado), state.prefill)
+    }
+
+    @Test
+    fun `editar solo la descripcion preserva ref, coordenadas, etiqueta, tipo y recordatorio`() =
+        runTest(dispatcher) {
+            val original = Event(
+                id = "e1",
+                userId = "u1",
+                type = EventType.cita,
+                contact = Contact("Ana", "ana@mail.com"),
+                location = Location(19.43, -99.13, "Campus Sur"),
+                description = "Descripcion vieja",
+                startsAt = Instant.parse("2026-06-10T15:30:00Z"),
+                status = EventStatus.realizado,
+                reminder = Reminder.one_day_before,
+                createdAt = Instant.EPOCH,
+                updatedAt = Instant.EPOCH,
+            )
+            repository.event = original
+            repository.updateResult = original
+            val viewModel = buildViewModel()
+            backgroundScope.launch { viewModel.uiState.collect {} }
+
+            viewModel.startEditing("e1")
+            viewModel.prefillHandled()
+
+            // El Fragment, tras el prefill, reenvia los valores cargados y solo cambia la descripcion.
+            // La fecha/hora y las coordenadas llegan como las dejo el prefill (zona del dispositivo).
+            val zoned = original.startsAt.atZone(ZoneId.systemDefault())
+            viewModel.submit(
+                AddEventInput(
+                    description = "Descripcion NUEVA",
+                    contactName = "Ana",
+                    placeLabel = "Campus Sur",
+                    type = EventType.cita,
+                    status = EventStatus.realizado,
+                    reminder = Reminder.one_day_before,
+                    date = zoned.toLocalDate(),
+                    time = zoned.toLocalTime(),
+                    lat = 19.43,
+                    lng = -99.13,
+                ),
+            )
+
+            val (id, patch) = repository.patches.single()
+            assertEquals("e1", id)
+            assertEquals("Descripcion NUEVA", patch.description)
+            assertEquals("ana@mail.com", patch.contact?.ref) // ref preservado (el form no lo edita)
+            assertEquals("Ana", patch.contact?.name)
+            assertEquals(19.43, patch.location?.lat ?: 0.0, 0.0) // coordenadas preservadas
+            assertEquals(-99.13, patch.location?.lng ?: 0.0, 0.0)
+            assertEquals("Campus Sur", patch.location?.label) // etiqueta preservada
+            assertEquals(EventType.cita, patch.type)
+            assertEquals(Reminder.one_day_before, patch.reminder)
+            assertEquals(original.startsAt, patch.startsAt) // round-trip a la zona y de vuelta
+            assertTrue(repository.createdDrafts.isEmpty()) // jamas usa la ruta de alta
+            assertTrue(viewModel.uiState.value.saved)
+        }
+
+    @Test
+    fun `si falla la carga del evento a editar no permite crear ni actualizar`() = runTest(dispatcher) {
+        repository.getByIdError = DomainError.Network
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.startEditing("e1")
+
+        val state = viewModel.uiState.value
+        assertTrue(state.editing)
+        assertTrue(state.loadFailed)
+        assertFalse(state.isLoadingEvent)
+        assertNotNull(state.errorRes)
+
+        // Con datos validos en el formulario, en edicion sin evento cargado submit no hace NADA:
+        // nunca crea (la ruta de alta produciria un evento nuevo) ni actualiza.
+        viewModel.submit(validInput())
+        assertTrue(repository.createdDrafts.isEmpty())
+        assertTrue(repository.patches.isEmpty())
+        assertFalse(viewModel.uiState.value.saved)
     }
 }

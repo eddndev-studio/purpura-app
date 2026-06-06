@@ -205,41 +205,49 @@
                 tools:text="@string/add_event_error_datetime"
                 tools:visibility="visible" />
 
-            <!-- Estatus -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/add_event_status_label"
-                android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/statusChipGroup"
+            <!-- Estatus. En modo edicion se oculta (statusSection): el Detalle ya es el dueno del
+                 estatus via su propio endpoint, asi el PATCH del formulario queda solo de campos. -->
+            <LinearLayout
+                android:id="@+id/statusSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                app:selectionRequired="true"
-                app:singleSelection="true">
+                android:layout_marginTop="20dp"
+                android:orientation="vertical">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipAddStatusPendiente"
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/event_status_pendiente" />
+                    android:text="@string/add_event_status_label"
+                    android:textAppearance="?attr/textAppearanceTitleSmall" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipAddStatusRealizado"
-                    android:layout_width="wrap_content"
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/statusChipGroup"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/event_status_realizado" />
+                    android:layout_marginTop="4dp"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipAddStatusAplazado"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/event_status_aplazado" />
-            </com.google.android.material.chip.ChipGroup>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipAddStatusPendiente"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="@string/event_status_pendiente" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipAddStatusRealizado"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/event_status_realizado" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipAddStatusAplazado"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/event_status_aplazado" />
+                </com.google.android.material.chip.ChipGroup>
+            </LinearLayout>
 
             <!-- Recordatorio -->
             <TextView

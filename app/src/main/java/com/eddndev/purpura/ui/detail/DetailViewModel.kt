@@ -68,6 +68,15 @@ class DetailViewModel @Inject constructor(
         load(id)
     }
 
+    // Fuerza una recarga aunque el id no cambie: lo invoca el Detalle al volver del formulario de
+    // edicion (FragmentResult), porque load() es idempotente por id y de otro modo mostraria el
+    // evento sin los cambios recien guardados.
+    fun refresh() {
+        val id = eventId ?: return
+        loadedId = null
+        load(id)
+    }
+
     fun changeStatus(status: EventStatus) {
         val id = eventId ?: return
         if (_uiState.value.isWorking) return

@@ -133,6 +133,7 @@
     <string name="detail_no_location">Sin ubicación</string>
     <string name="detail_reminder_label">Recordatorio</string>
     <string name="detail_status_label">Estatus</string>
+    <string name="detail_edit">Editar evento</string>
     <string name="detail_delete">Eliminar evento</string>
     <string name="detail_delete_confirm_title">Eliminar evento</string>
     <string name="detail_delete_confirm_message">¿Seguro que quieres eliminar este evento? Esta acción no se puede deshacer.</string>
@@ -196,6 +197,9 @@
     <string name="add_event_save">Guardar evento</string>
     <string name="add_event_pick_location">Elegir en el mapa</string>
     <string name="add_event_location_selected">Ubicación seleccionada en el mapa</string>
+    <!-- Modo edicion: el mismo formulario reutilizado desde el Detalle (REQ-QUERY-011/012) -->
+    <string name="add_event_edit_title">Editar evento</string>
+    <string name="add_event_update_action">Actualizar evento</string>
 
     <!-- Selector de ubicacion en mapa (REQ-ADD-005) -->
     <string name="title_location_picker">Elegir ubicación</string>
