@@ -57,6 +57,11 @@
     <string name="about_app_name">Purpura</string>
     <string name="about_version">Versión 0.1.0</string>
     <string name="about_credits">Organizador de eventos.\nProyecto de Desarrollo de Aplicaciones Móviles Nativas.\nedu. eddndev</string>
+    <string name="about_logout">Cerrar sesión</string>
+    <string name="about_logout_title">Cerrar sesión</string>
+    <string name="about_logout_message">Se borrarán tu sesión y los datos en este dispositivo. Volverás a la pantalla de acceso.</string>
+    <string name="about_logout_confirm">Cerrar sesión</string>
+    <string name="about_logout_cancel">Cancelar</string>
 
     <!-- Salir -->
     <string name="exit_title">Salir de Purpura</string>
