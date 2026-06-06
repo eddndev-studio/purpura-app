@@ -183,6 +183,10 @@
     <!-- Anadir evento: formulario (REQ-ADD-001..009) -->
     <string name="add_event_description_label">Descripción</string>
     <string name="add_event_contact_label">Contacto</string>
+    <string name="add_event_pick_contact">Elegir contacto</string>
+    <string name="add_event_contact_linked">Contacto vinculado del teléfono</string>
+    <string name="add_event_contacts_denied">Sin permiso de contactos. Escribe el nombre a mano.</string>
+    <string name="add_event_contact_read_failed">No se pudo leer el contacto elegido.</string>
     <string name="add_event_place_label">Lugar (opcional)</string>
     <string name="add_event_place_helper">Por ahora escribe el lugar; el selector de mapa llegará pronto.</string>
     <string name="add_event_type_label">Tipo</string>

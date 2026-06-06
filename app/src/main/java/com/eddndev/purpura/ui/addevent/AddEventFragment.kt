@@ -2,6 +2,7 @@ package com.eddndev.purpura.ui.addevent
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -66,6 +67,13 @@ class AddEventFragment : Fragment() {
     private var pickedLat: Double? = null
     private var pickedLng: Double? = null
 
+    // Telefono del contacto elegido en el selector del sistema (null = nombre escrito a mano o sin
+    // telefono). Se limpia si el usuario edita el nombre manualmente: el ref deja de corresponder.
+    private var pickedContactRef: String? = null
+    // Evita que el watcher del campo borre el ref cuando somos nosotros quienes ponemos el nombre
+    // (al elegir contacto, prefill de edicion o restauracion tras rotar).
+    private var settingContactFromPicker = false
+
     // Modo edicion (formulario reutilizado desde el Detalle): se deriva del argumento eventId. Cuando
     // esta presente, el VM carga el evento y este Fragment vuelca sus valores en los widgets.
     private var editEventId: String? = null
@@ -75,6 +83,24 @@ class AddEventFragment : Fragment() {
     // usuario lo niega, la alarma se programa igual pero no producira aviso visible (decision suya).
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* resultado ignorado */ }
+
+    // Selector de contactos del sistema (REQ-ADD-002). Devuelve el URI del contacto elegido (o null si
+    // el usuario cancela); de ahi resolvemos nombre + telefono. Solo se lanza con READ_CONTACTS dado.
+    private val pickContact =
+        registerForActivityResult(ActivityResultContracts.PickContact()) { uri ->
+            uri?.let(::applyPickedContact)
+        }
+
+    // Permiso de contactos (runtime). Se pide al tocar "Elegir contacto"; si se concede, abre el
+    // selector enseguida; si se niega, avisa y el usuario escribe el nombre a mano (sin vincular).
+    private val contactsPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                pickContact.launch(null)
+            } else {
+                Snackbar.make(binding.root, R.string.add_event_contacts_denied, Snackbar.LENGTH_LONG).show()
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -94,13 +120,19 @@ class AddEventFragment : Fragment() {
         binding.dateButton.setOnClickListener { openDatePicker() }
         binding.timeButton.setOnClickListener { openTimePicker() }
         binding.pickLocationButton.setOnClickListener { openLocationPicker() }
+        binding.pickContactButton.setOnClickListener { ensureContactsPermissionThenPick() }
         binding.saveButton.setOnClickListener { onSave() }
 
         listenForPickedLocation()
 
         // Al editar un campo se limpia su error para no dejarlo "pegado" mientras el usuario corrige.
         binding.descriptionInput.doAfterTextChanged { viewModel.clearFieldErrors() }
-        binding.contactInput.doAfterTextChanged { viewModel.clearFieldErrors() }
+        binding.contactInput.doAfterTextChanged {
+            viewModel.clearFieldErrors()
+            // Edicion manual del nombre: el ref deja de corresponder al contacto vinculado, salvo que
+            // seamos nosotros poniendo el nombre (elegir contacto / prefill / restauracion).
+            if (!settingContactFromPicker) clearContactLink()
+        }
 
         // Modo edicion: el id llega como argumento (sobrevive a la recreacion). startEditing es
         // idempotente, asi que llamarlo en cada onViewCreated no recarga ni re-rellena.
@@ -129,6 +161,15 @@ class AddEventFragment : Fragment() {
         // restauro arriba). Mismo criterio que QueryFragment.
         (parentFragmentManager.findFragmentByTag(DATE_PICKER_TAG) as? DialogFragment)?.dismiss()
         (parentFragmentManager.findFragmentByTag(TIME_PICKER_TAG) as? DialogFragment)?.dismiss()
+        // El sistema ya restauro el texto del campo arriba (super), lo que disparo el watcher y limpio
+        // el ref. Re-vinculamos despues para que el contacto sobreviva a la rotacion.
+        savedInstanceState?.let(::restoreContactLink)
+    }
+
+    private fun restoreContactLink(state: Bundle) {
+        val ref = state.getString(KEY_CONTACT_REF) ?: return
+        pickedContactRef = ref
+        binding.contactLinked.isVisible = true
     }
 
     private fun restoreDateTime(state: Bundle) {
@@ -152,6 +193,7 @@ class AddEventFragment : Fragment() {
             outState.putDouble(KEY_LAT, lat)
             outState.putDouble(KEY_LNG, lng)
         }
+        pickedContactRef?.let { outState.putString(KEY_CONTACT_REF, it) }
     }
 
     private fun restoreLocation(state: Bundle) {
@@ -187,6 +229,38 @@ class AddEventFragment : Fragment() {
                 binding.placeInput.setText(label)
             }
         }
+    }
+
+    // Pide READ_CONTACTS si falta y abre el selector. Con el permiso ya dado, abre directo.
+    private fun ensureContactsPermissionThenPick() {
+        val granted = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.READ_CONTACTS,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) pickContact.launch(null) else contactsPermission.launch(Manifest.permission.READ_CONTACTS)
+    }
+
+    // Vuelca el contacto elegido en el campo: pone el nombre (con la guarda para no perder el ref) y
+    // guarda su telefono como ref. Si no se pudo leer la fila, avisa y no toca el formulario.
+    private fun applyPickedContact(uri: Uri) {
+        val picked = ContactResolver.resolve(requireContext().contentResolver, uri)
+        if (picked == null) {
+            Snackbar.make(binding.root, R.string.add_event_contact_read_failed, Snackbar.LENGTH_LONG).show()
+            return
+        }
+        settingContactFromPicker = true
+        binding.contactInput.setText(picked.name)
+        settingContactFromPicker = false
+        pickedContactRef = picked.ref
+        // El indicador de "vinculado" solo aplica si quedo un telefono ligado al nombre.
+        binding.contactLinked.isVisible = picked.ref != null
+        viewModel.clearFieldErrors()
+    }
+
+    // Desvincula el contacto: el nombre se conserva como texto libre, pero ya no apunta a un telefono.
+    private fun clearContactLink() {
+        pickedContactRef = null
+        binding.contactLinked.isVisible = false
     }
 
     private fun openDatePicker() {
@@ -233,6 +307,7 @@ class AddEventFragment : Fragment() {
                 time = selectedTime,
                 lat = pickedLat,
                 lng = pickedLng,
+                contactRef = pickedContactRef,
             ),
         )
     }
@@ -313,7 +388,13 @@ class AddEventFragment : Fragment() {
     // los eventos viejos solo-etiqueta conservan asi su comportamiento sin mapa.
     private fun prefillForm(event: Event) {
         binding.descriptionInput.setText(event.description)
+        // El nombre se vuelca con la guarda para no perder el ref que sembramos enseguida; asi al editar
+        // solo otros campos el contacto vinculado del evento se reenvia intacto en el patch.
+        settingContactFromPicker = true
         binding.contactInput.setText(event.contact.name)
+        settingContactFromPicker = false
+        pickedContactRef = event.contact.ref
+        binding.contactLinked.isVisible = event.contact.ref != null
         binding.placeInput.setText(event.location.label.orEmpty())
         binding.checkType(event.type)
         binding.checkStatus(event.status)
@@ -356,6 +437,7 @@ class AddEventFragment : Fragment() {
         const val KEY_TIME = "add_event_selected_time"
         const val KEY_LAT = "add_event_picked_lat"
         const val KEY_LNG = "add_event_picked_lng"
+        const val KEY_CONTACT_REF = "add_event_picked_contact_ref"
         const val DEFAULT_HOUR = 12
         val LOCALE: Locale = Locale("es", "MX")
         val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", LOCALE)

@@ -123,7 +123,7 @@ class AddEventViewModel @Inject constructor(
 
     private fun buildDraft(input: AddEventInput, startsAt: Instant): NewEventDraft = NewEventDraft(
         type = input.type,
-        contact = Contact(name = input.contactName.trim()),
+        contact = Contact(name = input.contactName.trim(), ref = input.contactRef?.trim()?.ifBlank { null }),
         location = Location(
             lat = input.lat ?: 0.0,
             lng = input.lng ?: 0.0,
@@ -134,10 +134,12 @@ class AddEventViewModel @Inject constructor(
         reminder = input.reminder,
     )
 
-    // El parche lleva todos los campos editables del formulario, pero PRESERVA lo que este no captura:
-    // contact.ref (no se edita) y, si no llegaron coordenadas nuevas, las del evento original (el mapa
-    // no se reabrio). El estatus NO va aqui: en edicion el Detalle es su dueno. La etiqueta SI viene
-    // del campo (en blanco => null, que el backend interpreta como limpiarla).
+    // El parche lleva todos los campos editables del formulario. El contacto (nombre + ref) ahora SI lo
+    // captura el formulario: el prefill siembra el ref del evento, asi que al editar solo la descripcion
+    // llega de vuelta intacto, y si el usuario reelige o renombra el contacto, el ref nuevo (o null) lo
+    // refleja. Las coordenadas se preservan del original si no se reabrio el mapa. El estatus NO va aqui:
+    // en edicion el Detalle es su dueno. La etiqueta SI viene del campo (en blanco => null, que el backend
+    // interpreta como limpiarla).
     private fun buildPatch(original: Event, input: AddEventInput, startsAt: Instant): EventPatch {
         val hasNewCoords = input.lat != null && input.lng != null
         val location = Location(
@@ -147,7 +149,7 @@ class AddEventViewModel @Inject constructor(
         )
         return EventPatch(
             type = input.type,
-            contact = Contact(name = input.contactName.trim(), ref = original.contact.ref),
+            contact = Contact(name = input.contactName.trim(), ref = input.contactRef?.trim()?.ifBlank { null }),
             location = location,
             description = input.description.trim(),
             startsAt = startsAt,

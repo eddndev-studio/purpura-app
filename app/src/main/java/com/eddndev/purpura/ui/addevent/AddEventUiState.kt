@@ -25,6 +25,9 @@ data class AddEventInput(
     // caso se conserva el comportamiento previo (lat/lng en 0.0, solo etiqueta de texto).
     val lat: Double? = null,
     val lng: Double? = null,
+    // Telefono del contacto elegido en el selector del sistema (REQ-ADD-002). Null si el usuario
+    // escribio el nombre a mano (sin vincular) o el contacto elegido no tiene telefono.
+    val contactRef: String? = null,
 )
 
 // Estado observable del formulario. Los errores por campo son @StringRes (consistente con los slices
