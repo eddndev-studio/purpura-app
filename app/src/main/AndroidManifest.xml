@@ -9,6 +9,9 @@
          Purpura; SCHEDULE_EXACT_ALARM cubre API 31-32. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <!-- Selector de contacto del evento (REQ-ADD-002): se pide en runtime al elegir contacto para
+         leer su telefono de la tabla Phone. Si se niega, el nombre se escribe a mano. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
         android:name=".PurpuraApplication"

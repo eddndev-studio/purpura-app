@@ -49,6 +49,29 @@
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/pickContactButton"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/add_event_pick_contact"
+                app:icon="@android:drawable/ic_menu_call"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Purpura.Pill" />
+
+            <TextView
+                android:id="@+id/contactLinked"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:drawablePadding="6dp"
+                android:gravity="center_vertical"
+                android:text="@string/add_event_contact_linked"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:visibility="gone"
+                app:drawableStartCompat="@android:drawable/ic_menu_call"
+                tools:visibility="visible" />
+
             <!-- Lugar (solo etiqueta por ahora; el selector de mapa llega con el billing de Maps) -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/placeLayout"
