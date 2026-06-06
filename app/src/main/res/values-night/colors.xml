@@ -47,4 +47,6 @@
     <color name="heatmap_2">#5A2A87</color>
     <color name="heatmap_3">#7B2AB8</color>
     <color name="heatmap_4">#A85CE0</color>
+    <!-- En noche heatmap_4 es claro (#A85CE0): el texto del mosaico mas intenso va oscuro. -->
+    <color name="heatmap_label_intense">#1D1A20</color>
 </resources>

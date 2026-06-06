@@ -67,6 +67,9 @@
     <color name="heatmap_2">#B57EDC</color>
     <color name="heatmap_3">#8E33C4</color>
     <color name="heatmap_4">#5C0F8B</color>
+    <!-- Texto sobre el mosaico mas intenso: la celda se invierte de tono entre claro y oscuro
+         (heatmap_4 es oscuro en claro, claro en noche), asi que el texto tambien (blanco/oscuro). -->
+    <color name="heatmap_label_intense">#FFFFFF</color>
 
     <!-- Utilitarios -->
     <color name="purpura_scrim">#52000000</color>

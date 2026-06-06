@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mosaico de un dia del mapa de calor: numero centrado sobre un fondo tenido por intensidad
+     (en HeatmapDayAdapter). Las celdas vacias de relleno quedan en blanco. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/heatmapDayCell"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/touch_target_min"
+    android:layout_margin="@dimen/space_xxs">
+
+    <TextView
+        android:id="@+id/dayNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textAppearance="@style/TextAppearance.Purpura.LabelMedium"
+        android:textColor="@color/purpura_on_surface"
+        tools:text="12" />
+</FrameLayout>

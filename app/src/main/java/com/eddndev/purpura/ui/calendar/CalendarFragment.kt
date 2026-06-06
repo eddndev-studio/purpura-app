@@ -1,13 +1,9 @@
 package com.eddndev.purpura.ui.calendar
 
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -22,12 +18,12 @@ import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.ui.common.EventDisplay
 import com.eddndev.purpura.ui.common.EventListAdapter
 import com.eddndev.purpura.ui.common.MonthGrid
+import com.eddndev.purpura.ui.common.bindWeekdayHeader
 import com.eddndev.purpura.ui.common.navigateToEventDetail
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.temporal.WeekFields
 import java.util.Locale
 
 // Calendario mensual (REQ-CAL-001..003). Pinta la rejilla del mes con puntos por tipo y, debajo,
@@ -63,26 +59,8 @@ class CalendarFragment : Fragment() {
         binding.prevMonthButton.setOnClickListener { viewModel.previousMonth() }
         binding.nextMonthButton.setOnClickListener { viewModel.nextMonth() }
 
-        buildWeekdayHeader()
+        binding.weekdayHeader.bindWeekdayHeader(LOCALE)
         observeState()
-    }
-
-    // Genera las 7 etiquetas de dias segun el primer dia de la semana del locale (es-MX = domingo),
-    // de modo que el orden del encabezado siempre coincida con el de la rejilla.
-    private fun buildWeekdayHeader() {
-        val firstDayOfWeek = WeekFields.of(LOCALE).firstDayOfWeek
-        val labels = MonthGrid.weekdayLabels(firstDayOfWeek, LOCALE)
-        binding.weekdayHeader.removeAllViews()
-        labels.forEach { label ->
-            val cell = TextView(requireContext()).apply {
-                text = label
-                gravity = Gravity.CENTER
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                setTextAppearance(R.style.TextAppearance_Purpura_LabelMedium)
-                setTextColor(ContextCompat.getColor(requireContext(), R.color.purpura_on_surface_variant))
-            }
-            binding.weekdayHeader.addView(cell)
-        }
     }
 
     private fun observeState() {

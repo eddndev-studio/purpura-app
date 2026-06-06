@@ -6,6 +6,7 @@
     <string name="nav_add_event">Añadir Eventos</string>
     <string name="nav_query_events">Consultar y modificación de Eventos</string>
     <string name="nav_calendar">Mostrar Calendario</string>
+    <string name="nav_heatmap">Mostrar Mapa de calor</string>
     <string name="nav_backup">Realizar Respaldo en Dropbox o Google Drive</string>
     <string name="nav_restore">Restaurar datos de Dropbox o Google Drive</string>
     <string name="nav_about">Acerca de</string>
@@ -135,6 +136,20 @@
     <string name="calendar_next_month">Mes siguiente</string>
     <string name="calendar_grid_desc">Calendario del mes</string>
     <string name="calendar_day_empty">Sin eventos este día.</string>
+
+    <!-- Mapa de calor mensual (densidad de eventos por dia) -->
+    <string name="heatmap_grid_desc">Mapa de calor del mes</string>
+    <string name="heatmap_legend_less">menos</string>
+    <string name="heatmap_legend_more">más</string>
+    <string name="heatmap_legend_desc">Escala de intensidad: de menos a más eventos por día.</string>
+    <plurals name="heatmap_month_total">
+        <item quantity="one">%d evento este mes</item>
+        <item quantity="other">%d eventos este mes</item>
+    </plurals>
+    <plurals name="heatmap_day_count">
+        <item quantity="one">%1$d evento el %2$s</item>
+        <item quantity="other">%1$d eventos el %2$s</item>
+    </plurals>
 
     <!-- Anadir evento: formulario (REQ-ADD-001..009) -->
     <string name="add_event_description_label">Descripción</string>

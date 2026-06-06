@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mapa de calor mensual: barra de navegacion de mes, encabezado de dias, rejilla de mosaicos
+     tenidos por densidad, leyenda de intensidad y total del mes. Un unico ScrollView envuelve el
+     contenido; la rejilla es wrap_content + nestedScrollingEnabled=false (no anida scrolls). -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/purpura_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/screen_margin_horizontal"
+        android:paddingTop="@dimen/space_sm"
+        android:paddingBottom="@dimen/space_lg">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/prevMonthButton"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/calendar_prev_month"
+                android:src="@drawable/ic_chevron_left" />
+
+            <TextView
+                android:id="@+id/monthLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textAppearance="@style/TextAppearance.Purpura.TitleLarge"
+                android:textColor="@color/purpura_on_surface"
+                tools:text="Junio 2026" />
+
+            <ImageButton
+                android:id="@+id/nextMonthButton"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/calendar_next_month"
+                android:src="@drawable/ic_chevron_right" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/loadingBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <LinearLayout
+            android:id="@+id/weekdayHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:orientation="horizontal" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/heatmapRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xxs"
+            android:contentDescription="@string/heatmap_grid_desc"
+            android:nestedScrollingEnabled="false"
+            tools:itemCount="35"
+            tools:listitem="@layout/item_heatmap_day" />
+
+        <!-- Leyenda de intensidad: menos [5 muestras] mas -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/space_md"
+            android:contentDescription="@string/heatmap_legend_desc"
+            android:gravity="center_vertical"
+            android:importantForAccessibility="yes"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/space_xs"
+                android:text="@string/heatmap_legend_less"
+                android:textAppearance="@style/TextAppearance.Purpura.LabelSmall"
+                android:textColor="@color/purpura_on_surface_variant" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="@dimen/space_xxs"
+                android:background="@color/heatmap_0" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="@dimen/space_xxs"
+                android:background="@color/heatmap_1" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="@dimen/space_xxs"
+                android:background="@color/heatmap_2" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="@dimen/space_xxs"
+                android:background="@color/heatmap_3" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="@dimen/space_xs"
+                android:background="@color/heatmap_4" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/heatmap_legend_more"
+                android:textAppearance="@style/TextAppearance.Purpura.LabelSmall"
+                android:textColor="@color/purpura_on_surface_variant" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/heatmapSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Purpura.BodyMedium"
+            android:textColor="@color/purpura_on_surface"
+            tools:text="12 eventos este mes" />
+    </LinearLayout>
+</ScrollView>
