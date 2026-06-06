@@ -67,7 +67,8 @@ class AddEventViewModelTest {
         reminder: Reminder = Reminder.ten_minutes_before,
         date: LocalDate? = LocalDate.of(2026, 6, 10),
         time: LocalTime? = LocalTime.of(15, 30),
-    ) = AddEventInput(description, contactName, placeLabel, type, status, reminder, date, time)
+        contactRef: String? = null,
+    ) = AddEventInput(description, contactName, placeLabel, type, status, reminder, date, time, contactRef = contactRef)
 
     @Test
     fun `un envio valido crea el evento y marca saved`() = runTest(dispatcher) {
@@ -86,6 +87,30 @@ class AddEventViewModelTest {
         assertTrue(viewModel.uiState.value.saved)
         assertFalse(viewModel.uiState.value.isSubmitting)
         assertEquals(listOf(sampleEvent("nuevo")), scheduler.scheduled) // programa el recordatorio
+    }
+
+    @Test
+    fun `un contacto vinculado guarda su telefono como ref en el draft`() = runTest(dispatcher) {
+        repository.createResult = sampleEvent("nuevo")
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.submit(validInput(contactName = "Ana", contactRef = "+52 55 1234 5678"))
+
+        val draft = repository.createdDrafts.single()
+        assertEquals("Ana", draft.contact.name)
+        assertEquals("+52 55 1234 5678", draft.contact.ref)
+    }
+
+    @Test
+    fun `sin contacto vinculado el ref del draft queda en null`() = runTest(dispatcher) {
+        repository.createResult = sampleEvent("nuevo")
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.submit(validInput(contactName = "Maria", contactRef = null))
+
+        assertNull(repository.createdDrafts.single().contact.ref)
     }
 
     @Test
@@ -275,13 +300,14 @@ class AddEventViewModelTest {
                     time = zoned.toLocalTime(),
                     lat = 19.43,
                     lng = -99.13,
+                    contactRef = "ana@mail.com", // el prefill sembro el ref; el form lo reenvia intacto
                 ),
             )
 
             val (id, patch) = repository.patches.single()
             assertEquals("e1", id)
             assertEquals("Descripcion NUEVA", patch.description)
-            assertEquals("ana@mail.com", patch.contact?.ref) // ref preservado (el form no lo edita)
+            assertEquals("ana@mail.com", patch.contact?.ref) // ref reenviado por el form (lo sembro el prefill)
             assertEquals("Ana", patch.contact?.name)
             assertEquals(19.43, patch.location?.lat ?: 0.0, 0.0) // coordenadas preservadas
             assertEquals(-99.13, patch.location?.lng ?: 0.0, 0.0)
