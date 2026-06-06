@@ -13,10 +13,8 @@
             android:id="@+id/nav_calendar"
             android:icon="@drawable/ic_calendar_month"
             android:title="@string/nav_calendar" />
-        <item
-            android:id="@+id/nav_heatmap"
-            android:icon="@drawable/ic_heatmap"
-            android:title="@string/nav_heatmap" />
+        <!-- El Mapa de calor NO va en el drawer (REQ-NAV-001 exige 7 items): se accede desde la
+             toolbar de Inicio y Calendario (menu_heatmap). -->
         <item
             android:id="@+id/nav_backup"
             android:icon="@drawable/ic_cloud_upload"
