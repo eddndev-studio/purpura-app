@@ -67,6 +67,9 @@ jobs:
           RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          # Maps Android key, inyectada al manifestPlaceholder MAPS_API_KEY (build.gradle.kts lee
+          # local.properties -> env -> ""). Sin el secret el build no rompe; el mapa sale en gris.
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
         run: ./gradlew :app:assembleRelease --console=plain --stacktrace
 
       - name: Verify signature
