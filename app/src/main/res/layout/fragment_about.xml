@@ -44,5 +44,15 @@
             android:text="@string/about_credits"
             android:textAppearance="@style/TextAppearance.Purpura.BodyMedium"
             android:textColor="@color/purpura_on_surface" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/logoutButton"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xxl"
+            android:text="@string/about_logout"
+            app:icon="@drawable/ic_logout"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Purpura.Pill" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
