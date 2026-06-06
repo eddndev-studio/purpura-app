@@ -21,3 +21,6 @@ google-services.json
 # OS
 .DS_Store
 Thumbs.db
+
+# CodeGraph local index
+.codegraph/
