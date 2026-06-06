@@ -1,5 +1,6 @@
 package com.eddndev.purpura.ui.support
 
+import com.eddndev.purpura.domain.backup.ExportDocument
 import com.eddndev.purpura.domain.model.Contact
 import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.domain.model.EventStatus
@@ -27,4 +28,15 @@ internal fun sampleEvent(
     reminder = reminder,
     createdAt = Instant.EPOCH,
     updatedAt = Instant.EPOCH,
+)
+
+// Documento de respaldo de muestra para las pruebas de Respaldo/Restaurar.
+internal fun sampleExportDocument(
+    events: List<Event> = listOf(sampleEvent()),
+): ExportDocument = ExportDocument(
+    schemaVersion = "1",
+    exportedAt = Instant.EPOCH,
+    userId = "u1",
+    count = events.size,
+    events = events,
 )

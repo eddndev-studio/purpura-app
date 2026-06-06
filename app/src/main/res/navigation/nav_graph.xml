@@ -39,13 +39,13 @@
         android:id="@+id/backupFragment"
         android:name="com.eddndev.purpura.ui.backup.BackupFragment"
         android:label="@string/title_backup"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_backup" />
 
     <fragment
         android:id="@+id/restoreFragment"
         android:name="com.eddndev.purpura.ui.backup.RestoreFragment"
         android:label="@string/title_restore"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_restore" />
 
     <fragment
         android:id="@+id/aboutFragment"

@@ -58,6 +58,18 @@ internal class FakeEventRepository : EventRepository {
     // curso). El draft ya quedo registrado en `createdDrafts` antes de suspenderse.
     var createGate: CompletableDeferred<Unit>? = null
 
+    // export()
+    val exportQueries = mutableListOf<EventQuery?>()
+    var exportError: Throwable? = null
+    var exportResult: ExportDocument? = null
+    var exportGate: CompletableDeferred<Unit>? = null
+
+    // import()
+    val importRequests = mutableListOf<ImportRequest>()
+    var importError: Throwable? = null
+    var importResult: ImportResult? = null
+    var importGate: CompletableDeferred<Unit>? = null
+
     override suspend fun query(query: EventQuery): Page<Event> {
         queries += query
         queryGate?.await()
@@ -97,8 +109,19 @@ internal class FakeEventRepository : EventRepository {
         createError?.let { throw it }
         return createResult ?: error("createResult no configurado en el fake")
     }
-    override suspend fun export(query: EventQuery?): ExportDocument = notUsed()
-    override suspend fun import(request: ImportRequest): ImportResult = notUsed()
+    override suspend fun export(query: EventQuery?): ExportDocument {
+        exportQueries += query
+        exportGate?.await()
+        exportError?.let { throw it }
+        return exportResult ?: error("exportResult no configurado en el fake")
+    }
+
+    override suspend fun import(request: ImportRequest): ImportResult {
+        importRequests += request
+        importGate?.await()
+        importError?.let { throw it }
+        return importResult ?: error("importResult no configurado en el fake")
+    }
 
     private fun notUsed(): Nothing = error("no usado en estas pruebas")
 

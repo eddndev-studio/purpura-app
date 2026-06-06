@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/space_xl"
+    tools:context=".ui.backup.RestoreFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:alpha="0.9"
+            android:contentDescription="@string/restore_title"
+            android:src="@drawable/ic_cloud_download"
+            app:tint="@color/purpura_primary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:gravity="center"
+            android:text="@string/restore_title"
+            android:textAppearance="@style/TextAppearance.Purpura.TitleMedium"
+            android:textColor="@color/purpura_on_surface" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:gravity="center"
+            android:text="@string/restore_body"
+            android:textAppearance="@style/TextAppearance.Purpura.BodyMedium"
+            android:textColor="@color/purpura_on_surface_variant" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/restoreButton"
+            style="@style/Widget.Purpura.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/restore_action"
+            app:icon="@drawable/ic_cloud_download" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/restoreProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:indeterminate="true"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

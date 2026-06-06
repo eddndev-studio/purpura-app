@@ -100,6 +100,18 @@ class EventRemoteMapper @Inject constructor() {
         events = dto.events.map(::toDomain),
     )
 
+    // Direccion inversa: serializa el documento del dominio al DTO que se escribe como JSON en
+    // el archivo de respaldo (Drive/Dropbox). El formato del archivo es identico al que el
+    // servidor produce en GET /events/export, asi un respaldo del cliente y uno del servidor
+    // son intercambiables.
+    fun toExportDocumentDto(document: ExportDocument): ExportDocumentDto = ExportDocumentDto(
+        schemaVersion = document.schemaVersion,
+        exportedAt = document.exportedAt.toString(),
+        userId = document.userId,
+        count = document.count,
+        events = document.events.map(::toDto),
+    )
+
     fun toImportRequestDto(request: ImportRequest): ImportRequestDto = ImportRequestDto(
         mode = request.mode.name,
         events = request.events.map(::toDto),

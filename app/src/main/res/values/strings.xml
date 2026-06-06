@@ -151,6 +151,24 @@
         <item quantity="other">%1$d eventos el %2$s</item>
     </plurals>
 
+    <!-- Respaldo y restauracion (REQ-BACKUP-001/002). El archivo es un .json elegido con el
+         selector del sistema (Storage Access Framework), que ofrece Drive, Dropbox o el dispositivo. -->
+    <string name="backup_title">Respaldo de eventos</string>
+    <string name="backup_body">Guarda todos tus eventos en un archivo .json. El selector del sistema te deja elegir Google Drive, Dropbox o tu dispositivo.</string>
+    <string name="backup_action">Respaldar mis eventos</string>
+    <string name="backup_empty">No tienes eventos que respaldar.</string>
+    <string name="backup_error_save">No se pudo guardar el respaldo.</string>
+    <plurals name="backup_result">
+        <item quantity="one">%d evento respaldado</item>
+        <item quantity="other">%d eventos respaldados</item>
+    </plurals>
+
+    <string name="restore_title">Restaurar eventos</string>
+    <string name="restore_body">Elige un archivo de respaldo .json de Purpura. Tus eventos se combinan con los actuales según su identificador.</string>
+    <string name="restore_action">Elegir archivo de respaldo</string>
+    <string name="restore_error_invalid_file">El archivo no es un respaldo válido de Purpura.</string>
+    <string name="restore_result_summary">Restaurado: %1$d nuevos, %2$d actualizados, %3$d omitidos, %4$d con error</string>
+
     <!-- Anadir evento: formulario (REQ-ADD-001..009) -->
     <string name="add_event_description_label">Descripción</string>
     <string name="add_event_contact_label">Contacto</string>
