@@ -1,7 +1,9 @@
 package com.eddndev.purpura.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
@@ -14,8 +16,10 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.eddndev.purpura.R
+import com.eddndev.purpura.data.reminder.ReminderReceiver
 import com.eddndev.purpura.databinding.ActivityMainBinding
 import com.eddndev.purpura.domain.usecase.auth.ObserveSessionUseCase
+import com.eddndev.purpura.ui.common.ARG_EVENT_ID
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -71,6 +75,25 @@ class MainActivity : AppCompatActivity() {
 
         hideChromeOnAuth()
         observeSessionGate()
+        handleReminderDeepLink(intent)
+    }
+
+    // Si la app vuelve a primer plano por el tap de un recordatorio (no por relanzamiento limpio),
+    // el nuevo Intent llega aqui (FLAG_ACTIVITY_SINGLE_TOP). setIntent lo deja como intent actual.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleReminderDeepLink(intent)
+    }
+
+    // Deep-link de notificacion: abre el Detalle del evento que disparo el recordatorio. Consume el
+    // extra (removeExtra) para no reabrir el Detalle al rotar (onCreate corre de nuevo con el mismo
+    // Intent). Si la sesion expiro, el gate ya habra llevado a Auth: no abrimos Detalle sobre ella.
+    private fun handleReminderDeepLink(intent: Intent) {
+        val eventId = intent.getStringExtra(ReminderReceiver.EXTRA_EVENT_ID) ?: return
+        intent.removeExtra(ReminderReceiver.EXTRA_EVENT_ID)
+        if (navController.currentDestination?.id == R.id.authFragment) return
+        navController.navigate(R.id.eventDetailFragment, bundleOf(ARG_EVENT_ID to eventId))
     }
 
     // El andamiaje (toolbar + bottom nav + drawer) no aplica en la pantalla de autenticacion.

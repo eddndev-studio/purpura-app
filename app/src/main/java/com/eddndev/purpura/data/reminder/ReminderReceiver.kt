@@ -14,8 +14,9 @@ import com.eddndev.purpura.R
 import com.eddndev.purpura.ui.MainActivity
 
 // Recibe la alarma programada por AlarmManagerReminderScheduler y publica la notificacion local del
-// recordatorio (REQ-NOTIF-001). Al tocarla abre la app. Si el usuario no concedio POST_NOTIFICATIONS
-// (API 33+), no se publica nada (la alarma simplemente no produce aviso visible).
+// recordatorio (REQ-NOTIF-001). Al tocarla abre el Detalle del evento (deep-link via EXTRA_EVENT_ID
+// que lee MainActivity). Si el usuario no concedio POST_NOTIFICATIONS (API 33+), no se publica nada
+// (la alarma simplemente no produce aviso visible).
 class ReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -23,10 +24,14 @@ class ReminderReceiver : BroadcastReceiver() {
         val title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
         if (!canPostNotifications(context)) return
 
+        // El eventId viaja en el Intent para que MainActivity abra el Detalle al tocar la notificacion.
+        val tapIntent = Intent(context, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra(EXTRA_EVENT_ID, eventId)
         val contentIntent = PendingIntent.getActivity(
             context,
             ReminderNotifications.notificationId(eventId),
-            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            tapIntent,
             PendingIntent.FLAG_IMMUTABLE,
         )
 
