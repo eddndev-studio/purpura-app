@@ -9,10 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -23,6 +25,7 @@ import com.eddndev.purpura.databinding.FragmentAddEventBinding
 import com.eddndev.purpura.domain.model.EventStatus
 import com.eddndev.purpura.domain.model.EventType
 import com.eddndev.purpura.domain.model.Reminder
+import com.eddndev.purpura.ui.location.LocationPickerFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -53,6 +56,10 @@ class AddEventFragment : Fragment() {
     private var selectedDate: LocalDate? = null
     private var selectedTime: LocalTime? = null
 
+    // Coordenadas elegidas en el selector de mapa (null = el usuario no abrio el mapa).
+    private var pickedLat: Double? = null
+    private var pickedLng: Double? = null
+
     // Permiso de notificaciones (API 33+). Se solicita al guardar con un recordatorio activo; si el
     // usuario lo niega, la alarma se programa igual pero no producira aviso visible (decision suya).
     private val notificationPermission =
@@ -71,10 +78,14 @@ class AddEventFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         savedInstanceState?.let(::restoreDateTime)
+        savedInstanceState?.let(::restoreLocation)
 
         binding.dateButton.setOnClickListener { openDatePicker() }
         binding.timeButton.setOnClickListener { openTimePicker() }
+        binding.pickLocationButton.setOnClickListener { openLocationPicker() }
         binding.saveButton.setOnClickListener { onSave() }
+
+        listenForPickedLocation()
 
         // Al editar un campo se limpia su error para no dejarlo "pegado" mientras el usuario corrige.
         binding.descriptionInput.doAfterTextChanged { viewModel.clearFieldErrors() }
@@ -107,6 +118,47 @@ class AddEventFragment : Fragment() {
         super.onSaveInstanceState(outState)
         selectedDate?.let { outState.putLong(KEY_DATE, it.toEpochDay()) }
         selectedTime?.let { outState.putInt(KEY_TIME, it.toSecondOfDay()) }
+        val lat = pickedLat
+        val lng = pickedLng
+        if (lat != null && lng != null) {
+            outState.putDouble(KEY_LAT, lat)
+            outState.putDouble(KEY_LNG, lng)
+        }
+    }
+
+    private fun restoreLocation(state: Bundle) {
+        if (state.containsKey(KEY_LAT) && state.containsKey(KEY_LNG)) {
+            pickedLat = state.getDouble(KEY_LAT)
+            pickedLng = state.getDouble(KEY_LNG)
+            binding.locationSelected.isVisible = true
+        }
+    }
+
+    private fun openLocationPicker() {
+        val args = bundleOf()
+        // Si ya hay una ubicacion elegida, el selector arranca centrado ahi.
+        val lat = pickedLat
+        val lng = pickedLng
+        if (lat != null && lng != null) {
+            args.putDouble(LocationPickerFragment.ARG_LAT, lat)
+            args.putDouble(LocationPickerFragment.ARG_LNG, lng)
+        }
+        if (findNavController().currentDestination?.id == R.id.addEventFragment) {
+            findNavController().navigate(R.id.locationPickerFragment, args)
+        }
+    }
+
+    private fun listenForPickedLocation() {
+        setFragmentResultListener(LocationPickerFragment.REQUEST_KEY) { _, bundle ->
+            pickedLat = bundle.getDouble(LocationPickerFragment.RESULT_LAT)
+            pickedLng = bundle.getDouble(LocationPickerFragment.RESULT_LNG)
+            binding.locationSelected.isVisible = true
+            // La etiqueta geocodificada solo rellena el campo Lugar si el usuario no escribio una.
+            val label = bundle.getString(LocationPickerFragment.RESULT_LABEL)
+            if (!label.isNullOrBlank() && binding.placeInput.text.isNullOrBlank()) {
+                binding.placeInput.setText(label)
+            }
+        }
     }
 
     private fun openDatePicker() {
@@ -151,6 +203,8 @@ class AddEventFragment : Fragment() {
                 reminder = reminder,
                 date = selectedDate,
                 time = selectedTime,
+                lat = pickedLat,
+                lng = pickedLng,
             ),
         )
     }
@@ -232,6 +286,8 @@ class AddEventFragment : Fragment() {
         const val TIME_PICKER_TAG = "add_event_time_picker"
         const val KEY_DATE = "add_event_selected_date"
         const val KEY_TIME = "add_event_selected_time"
+        const val KEY_LAT = "add_event_picked_lat"
+        const val KEY_LNG = "add_event_picked_lng"
         const val DEFAULT_HOUR = 12
         val LOCALE: Locale = Locale("es", "MX")
         val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", LOCALE)

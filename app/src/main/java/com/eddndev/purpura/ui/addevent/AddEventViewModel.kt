@@ -68,7 +68,11 @@ class AddEventViewModel @Inject constructor(
                     draft = NewEventDraft(
                         type = input.type,
                         contact = Contact(name = input.contactName.trim()),
-                        location = Location(lat = 0.0, lng = 0.0, label = input.placeLabel.trim().ifBlank { null }),
+                        location = Location(
+                            lat = input.lat ?: 0.0,
+                            lng = input.lng ?: 0.0,
+                            label = input.placeLabel.trim().ifBlank { null },
+                        ),
                         description = input.description.trim(),
                         startsAt = startsAt,
                         reminder = input.reminder,

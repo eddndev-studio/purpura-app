@@ -67,6 +67,29 @@
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/pickLocationButton"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/add_event_pick_location"
+                app:icon="@android:drawable/ic_dialog_map"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Purpura.Pill" />
+
+            <TextView
+                android:id="@+id/locationSelected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:drawablePadding="6dp"
+                android:gravity="center_vertical"
+                android:text="@string/add_event_location_selected"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:visibility="gone"
+                app:drawableStartCompat="@android:drawable/ic_menu_mylocation"
+                tools:visibility="visible" />
+
             <!-- Tipo -->
             <TextView
                 android:layout_width="wrap_content"

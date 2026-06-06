@@ -68,4 +68,10 @@
         android:name="com.eddndev.purpura.ui.auth.AuthFragment"
         android:label="@string/title_auth"
         tools:layout="@layout/fragment_auth" />
+
+    <fragment
+        android:id="@+id/locationPickerFragment"
+        android:name="com.eddndev.purpura.ui.location.LocationPickerFragment"
+        android:label="@string/title_location_picker"
+        tools:layout="@layout/fragment_location_picker" />
 </navigation>

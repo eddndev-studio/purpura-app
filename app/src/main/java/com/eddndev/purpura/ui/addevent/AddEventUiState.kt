@@ -20,6 +20,10 @@ data class AddEventInput(
     val reminder: Reminder,
     val date: LocalDate?,
     val time: LocalTime?,
+    // Coordenadas elegidas en el mapa (REQ-ADD-005). Null si el usuario no abrio el selector: en ese
+    // caso se conserva el comportamiento previo (lat/lng en 0.0, solo etiqueta de texto).
+    val lat: Double? = null,
+    val lng: Double? = null,
 )
 
 // Estado observable del formulario. Los errores por campo son @StringRes (consistente con los slices

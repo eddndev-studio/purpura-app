@@ -18,8 +18,15 @@ import com.eddndev.purpura.R
 import com.eddndev.purpura.databinding.FragmentEventDetailBinding
 import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.domain.model.EventStatus
+import com.eddndev.purpura.domain.model.Location
 import com.eddndev.purpura.ui.common.ARG_EVENT_ID
 import com.eddndev.purpura.ui.common.EventDisplay
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMapOptions
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -37,6 +44,12 @@ class EventDetailFragment : Fragment() {
 
     private var suppressStatusEvents = false
     private var handledDeleted = false
+
+    // Mapa lite de la ubicacion (solo lectura). Se crea perezosamente la primera vez que un evento
+    // trae coordenadas reales.
+    private var detailMap: GoogleMap? = null
+    private var mapLatLng: LatLng? = null
+    private var mapRequested = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -118,6 +131,7 @@ class EventDetailFragment : Fragment() {
         binding.contactText.text = event.contact.name
         binding.locationText.text = event.location.label?.takeIf { it.isNotBlank() }
             ?: getString(R.string.detail_no_location)
+        updateLocationMap(event.location)
         binding.reminderText.setText(EventDisplay.reminderLabel(event.reminder))
 
         binding.typeBadge.apply {
@@ -163,8 +177,48 @@ class EventDetailFragment : Fragment() {
             .show()
     }
 
+    // Muestra el mapa lite solo si el evento tiene coordenadas reales. lat==0 && lng==0 es el
+    // centinela de "sin ubicacion en mapa" (eventos viejos solo-etiqueta): no es limpio, pero evita
+    // re-modelar Location por ahora.
+    private fun updateLocationMap(location: Location) {
+        val hasCoordinates = location.lat != 0.0 || location.lng != 0.0
+        binding.detailMapCard.isVisible = hasCoordinates
+        if (!hasCoordinates) return
+
+        mapLatLng = LatLng(location.lat, location.lng)
+        detailMap?.let {
+            applyMapMarker()
+            return
+        }
+        if (mapRequested) return
+        mapRequested = true
+        val mapFragment = SupportMapFragment.newInstance(GoogleMapOptions().liteMode(true))
+        childFragmentManager.beginTransaction()
+            .replace(R.id.detailMapContainer, mapFragment)
+            .commitNow()
+        mapFragment.getMapAsync { map ->
+            if (_binding == null) return@getMapAsync
+            detailMap = map
+            applyMapMarker()
+        }
+    }
+
+    private fun applyMapMarker() {
+        val map = detailMap ?: return
+        val latLng = mapLatLng ?: return
+        map.clear()
+        map.addMarker(MarkerOptions().position(latLng))
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DETAIL_MAP_ZOOM))
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        detailMap = null
+        mapRequested = false
         _binding = null
+    }
+
+    private companion object {
+        const val DETAIL_MAP_ZOOM = 15f
     }
 }

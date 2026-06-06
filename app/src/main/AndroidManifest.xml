@@ -16,6 +16,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Purpura">
 
+        <!-- Maps SDK for Android. La key la inyecta el build desde local.properties/env (placeholder
+             MAPS_API_KEY); si esta vacia el mapa no renderiza pero la app no rompe. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"

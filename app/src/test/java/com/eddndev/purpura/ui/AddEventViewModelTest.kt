@@ -119,6 +119,32 @@ class AddEventViewModelTest {
     }
 
     @Test
+    fun `las coordenadas elegidas en el mapa van al draft`() = runTest(dispatcher) {
+        repository.createResult = sampleEvent("nuevo")
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.submit(validInput().copy(lat = 19.5, lng = -99.2))
+
+        val location = repository.createdDrafts.single().location
+        assertEquals(19.5, location.lat, 0.0)
+        assertEquals(-99.2, location.lng, 0.0)
+    }
+
+    @Test
+    fun `sin coordenadas la ubicacion queda en cero`() = runTest(dispatcher) {
+        repository.createResult = sampleEvent("nuevo")
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.submit(validInput()) // lat/lng nulos por defecto
+
+        val location = repository.createdDrafts.single().location
+        assertEquals(0.0, location.lat, 0.0)
+        assertEquals(0.0, location.lng, 0.0)
+    }
+
+    @Test
     fun `una descripcion vacia marca error de campo y no crea`() = runTest(dispatcher) {
         val viewModel = buildViewModel()
         backgroundScope.launch { viewModel.uiState.collect {} }

@@ -120,6 +120,23 @@
                 android:textColor="@color/purpura_on_surface"
                 tools:text="Campus Norte" />
 
+            <!-- Mapa lite (estatico, solo lectura) de la ubicacion. Visible solo si el evento tiene
+                 coordenadas reales (lat!=0 || lng!=0); los eventos viejos solo-etiqueta lo ocultan. -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/detailMapCard"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:layout_marginTop="@dimen/space_md"
+                android:visibility="gone"
+                app:cardCornerRadius="16dp"
+                tools:visibility="visible">
+
+                <FrameLayout
+                    android:id="@+id/detailMapContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </com.google.android.material.card.MaterialCardView>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

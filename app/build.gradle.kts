@@ -20,6 +20,19 @@ val releaseKeystoreProps: Properties = Properties().apply {
 fun signingValue(env: String, prop: String): String? =
     System.getenv(env) ?: releaseKeystoreProps.getProperty(prop)
 
+// Maps Android API key. Orden de fuentes: local.properties (gitignored, build local) -> variable
+// de entorno MAPS_API_KEY (CI/runner). NUNCA se commitea: el repo es publico y la key, aunque
+// restringida por SHA-1+paquete, no debe vivir en el. Si falta queda "" y el mapa no renderiza,
+// pero el build NO rompe (los tiles fallan en runtime): util para CI y para quien no tenga la key.
+// Ver [[purpura-gcloud-setup]].
+val localProps: Properties = Properties().apply {
+    val propsFile = rootProject.file("local.properties")
+    if (propsFile.exists()) FileInputStream(propsFile).use { load(it) }
+}
+val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY")
+    ?: System.getenv("MAPS_API_KEY")
+    ?: ""
+
 // Versionado: en los releases por tag, el CI inyecta APP_VERSION_NAME / APP_VERSION_CODE
 // derivados del propio tag (el tag vX.Y.Z es la UNICA fuente de verdad, ver release.yml). En
 // builds locales y en el CI de debug no estan definidas y se usan estos defaults. Asi el nombre
@@ -42,6 +55,10 @@ android {
         versionCode = appVersionCode
         versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // La key se inyecta como placeholder del manifest (com.google.android.geo.API_KEY), no como
+        // recurso ni BuildConfig, para no exponerla en el codigo.
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
 
         // Base URL de la API Go (debe terminar en /). Debug apunta al loopback del host del
         // emulador (10.0.2.2): requiere el backend corriendo localmente para probar en vivo.
@@ -136,6 +153,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.security.crypto)
     implementation(libs.play.services.auth)
+    implementation(libs.play.services.maps)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
