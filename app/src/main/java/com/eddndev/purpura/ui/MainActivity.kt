@@ -117,7 +117,6 @@ class MainActivity : AppCompatActivity() {
             R.id.nav_add_event -> navController.navigate(R.id.addEventFragment)
             R.id.nav_query_events, R.id.menu_consultar -> navController.navigate(R.id.queryFragment)
             R.id.nav_calendar -> navController.navigate(R.id.calendarFragment)
-            R.id.nav_heatmap -> navController.navigate(R.id.heatmapFragment)
             R.id.nav_backup -> navController.navigate(R.id.backupFragment)
             R.id.nav_restore -> navController.navigate(R.id.restoreFragment)
             R.id.nav_about -> navController.navigate(R.id.aboutFragment)

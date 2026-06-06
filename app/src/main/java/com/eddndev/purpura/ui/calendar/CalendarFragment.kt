@@ -18,6 +18,7 @@ import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.ui.common.EventDisplay
 import com.eddndev.purpura.ui.common.EventListAdapter
 import com.eddndev.purpura.ui.common.MonthGrid
+import com.eddndev.purpura.ui.common.addHeatmapMenu
 import com.eddndev.purpura.ui.common.bindWeekdayHeader
 import com.eddndev.purpura.ui.common.navigateToEventDetail
 import com.google.android.material.snackbar.Snackbar
@@ -60,6 +61,7 @@ class CalendarFragment : Fragment() {
         binding.nextMonthButton.setOnClickListener { viewModel.nextMonth() }
 
         binding.weekdayHeader.bindWeekdayHeader(LOCALE)
+        addHeatmapMenu(R.id.calendarFragment)
         observeState()
     }
 

@@ -15,6 +15,7 @@ import com.eddndev.purpura.R
 import com.eddndev.purpura.databinding.FragmentHomeBinding
 import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.ui.common.EventListAdapter
+import com.eddndev.purpura.ui.common.addHeatmapMenu
 import com.eddndev.purpura.ui.common.navigateToEventDetail
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,6 +49,7 @@ class HomeFragment : Fragment() {
         binding.fabAddEvent.setOnClickListener {
             findNavController().navigate(R.id.addEventFragment)
         }
+        addHeatmapMenu(R.id.homeFragment)
 
         observeState()
     }
