@@ -14,6 +14,8 @@ import androidx.navigation.fragment.findNavController
 import com.eddndev.purpura.R
 import com.eddndev.purpura.databinding.FragmentHomeBinding
 import com.eddndev.purpura.domain.model.Event
+import com.eddndev.purpura.ui.common.EventListAdapter
+import com.eddndev.purpura.ui.common.navigateToEventDetail
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -27,7 +29,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: HomeViewModel by viewModels()
 
-    private val adapter = HomeEventAdapter(onClick = ::onEventClick)
+    private val adapter = EventListAdapter(onClick = ::onEventClick)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,11 +72,10 @@ class HomeFragment : Fragment() {
         }
     }
 
-    // TODO(#8): navegar al detalle del evento cuando exista esa pantalla (slice de Detalle/Edicion).
-    // Seam intencional: el destino de detalle aun no recibe argumentos. Se completara al construir
-    // el slice de Detalle para no dejar navegacion a medias.
-    @Suppress("UNUSED_PARAMETER")
-    private fun onEventClick(event: Event) = Unit
+    // Navega al detalle del evento (guardado contra doble navegacion).
+    private fun onEventClick(event: Event) {
+        findNavController().navigateToEventDetail(event.id, R.id.homeFragment)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

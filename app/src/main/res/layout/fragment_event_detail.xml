@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Detalle de un evento: encabezado (fecha/hora + insignias), descripcion, contacto, ubicacion,
+     recordatorio, selector de estatus y boton de eliminar. El contenido se oculta mientras carga;
+     un ProgressBar central cubre la carga inicial. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/purpura_background">
+
+    <ScrollView
+        android:id="@+id/contentScroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_margin_horizontal"
+            android:paddingVertical="@dimen/space_lg">
+
+            <TextView
+                android:id="@+id/dateFullText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Purpura.LabelLarge"
+                android:textColor="@color/purpura_primary"
+                tools:text="Viernes 12 de junio 2026" />
+
+            <TextView
+                android:id="@+id/timeText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Purpura.HeadlineSmall"
+                android:textColor="@color/purpura_on_surface"
+                tools:text="15:30" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/typeBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_pill_badge"
+                    android:minHeight="0dp"
+                    android:paddingHorizontal="@dimen/space_sm"
+                    android:paddingVertical="@dimen/space_xxs"
+                    android:textAppearance="@style/TextAppearance.Purpura.LabelSmall"
+                    tools:backgroundTint="@color/event_junta_container"
+                    tools:text="Junta"
+                    tools:textColor="@color/event_junta" />
+
+                <TextView
+                    android:id="@+id/statusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:background="@drawable/bg_pill_badge"
+                    android:minHeight="0dp"
+                    android:paddingHorizontal="@dimen/space_sm"
+                    android:paddingVertical="@dimen/space_xxs"
+                    android:textAppearance="@style/TextAppearance.Purpura.LabelSmall"
+                    tools:backgroundTint="@color/status_pendiente_container"
+                    tools:text="Pendiente"
+                    tools:textColor="@color/status_pendiente" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/descriptionText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:textAppearance="@style/TextAppearance.Purpura.TitleLarge"
+                android:textColor="@color/purpura_on_surface"
+                tools:text="Revisión de avance del proyecto final" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="@dimen/space_md"
+                android:background="@color/purpura_divider" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/detail_contact_label"
+                android:textAppearance="@style/TextAppearance.Purpura.LabelMedium"
+                android:textColor="@color/purpura_on_surface_variant" />
+
+            <TextView
+                android:id="@+id/contactText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Purpura.BodyLarge"
+                android:textColor="@color/purpura_on_surface"
+                tools:text="María González" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:text="@string/detail_location_label"
+                android:textAppearance="@style/TextAppearance.Purpura.LabelMedium"
+                android:textColor="@color/purpura_on_surface_variant" />
+
+            <TextView
+                android:id="@+id/locationText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Purpura.BodyLarge"
+                android:textColor="@color/purpura_on_surface"
+                tools:text="Campus Norte" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:text="@string/detail_reminder_label"
+                android:textAppearance="@style/TextAppearance.Purpura.LabelMedium"
+                android:textColor="@color/purpura_on_surface_variant" />
+
+            <TextView
+                android:id="@+id/reminderText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Purpura.BodyLarge"
+                android:textColor="@color/purpura_on_surface"
+                tools:text="10 minutos antes" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:text="@string/detail_status_label"
+                android:textAppearance="@style/TextAppearance.Purpura.LabelMedium"
+                android:textColor="@color/purpura_on_surface_variant" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/statusChipGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDetailPendiente"
+                    style="@style/Widget.Purpura.Chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/event_status_pendiente" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDetailRealizado"
+                    style="@style/Widget.Purpura.Chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/event_status_realizado" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDetailAplazado"
+                    style="@style/Widget.Purpura.Chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/event_status_aplazado" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/deleteButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/detail_delete"
+                android:textColor="@color/purpura_error"
+                app:icon="@drawable/ic_logout"
+                app:iconTint="@color/purpura_error"
+                app:shapeAppearance="@style/ShapeAppearance.Purpura.Pill"
+                app:strokeColor="@color/purpura_error" />
+
+            <ProgressBar
+                android:id="@+id/workingProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/space_md"
+                android:indeterminate="true"
+                android:visibility="gone"
+                tools:visibility="visible" />
+        </LinearLayout>
+    </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        tools:visibility="gone" />
+
+    <!-- Estado de error de carga: en vez de una pantalla en blanco, ofrece reintentar. -->
+    <LinearLayout
+        android:id="@+id/errorGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/space_md"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:alpha="0.38"
+            android:contentDescription="@string/placeholder_icon_desc"
+            android:src="@drawable/ic_info"
+            app:tint="@color/purpura_primary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:gravity="center"
+            android:text="@string/detail_load_error_title"
+            android:textAppearance="@style/TextAppearance.Purpura.TitleMedium"
+            android:textColor="@color/purpura_on_surface" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/retryButton"
+            style="@style/Widget.Purpura.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:text="@string/detail_retry" />
+    </LinearLayout>
+</FrameLayout>

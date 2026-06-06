@@ -100,6 +100,42 @@
     <string name="error_unauthorized">Tu sesión expiró. Inicia sesión de nuevo.</string>
     <string name="error_unexpected">Ocurrió un error. Intenta más tarde.</string>
 
+    <!-- Consultar: filtros y resultados (REQ-QUERY-001..006) -->
+    <string name="filter_all">Todos</string>
+    <string name="query_period_label">Periodo</string>
+    <string name="query_type_label">Tipo</string>
+    <string name="query_status_label">Estatus</string>
+    <string name="query_mode_day">Día</string>
+    <string name="query_mode_range">Rango</string>
+    <string name="query_pick_day">Elegir día</string>
+    <string name="query_pick_range">Elegir rango</string>
+    <string name="query_date_picker_title">Selecciona una fecha</string>
+    <string name="query_range_picker_title">Selecciona un rango</string>
+    <string name="query_range_format">%1$s – %2$s</string>
+    <string name="query_results_desc">Resultados de la consulta</string>
+    <string name="query_empty_title">Sin resultados</string>
+    <string name="query_empty_body">Ajusta los filtros e intenta de nuevo.</string>
+
+    <!-- Detalle y edicion de un evento (REQ-QUERY-007..013) -->
+    <string name="detail_contact_label">Contacto</string>
+    <string name="detail_location_label">Ubicación</string>
+    <string name="detail_no_location">Sin ubicación</string>
+    <string name="detail_reminder_label">Recordatorio</string>
+    <string name="detail_status_label">Estatus</string>
+    <string name="detail_delete">Eliminar evento</string>
+    <string name="detail_delete_confirm_title">Eliminar evento</string>
+    <string name="detail_delete_confirm_message">¿Seguro que quieres eliminar este evento? Esta acción no se puede deshacer.</string>
+    <string name="detail_delete_confirm">Eliminar</string>
+    <string name="detail_delete_cancel">Cancelar</string>
+    <string name="detail_load_error_title">No se pudo cargar el evento</string>
+    <string name="detail_retry">Reintentar</string>
+
+    <!-- Etiquetas de recordatorio (UI en español; el código del dominio es ASCII) -->
+    <string name="reminder_none">Sin recordatorio</string>
+    <string name="reminder_at_time">A la hora del evento</string>
+    <string name="reminder_ten_minutes_before">10 minutos antes</string>
+    <string name="reminder_one_day_before">Un día antes</string>
+
     <!-- OAuth: client id Web (publico, no es secreto). Es el audience del idToken. -->
     <string name="server_client_id" translatable="false">192602671268-t21fn2svpmep9evedhac8i6t79e4nkqb.apps.googleusercontent.com</string>
 </resources>

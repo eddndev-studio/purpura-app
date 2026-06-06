@@ -1,4 +1,4 @@
-package com.eddndev.purpura.ui.home
+package com.eddndev.purpura.ui.common
 
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
@@ -10,11 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.eddndev.purpura.databinding.ItemEventBinding
 import com.eddndev.purpura.domain.model.Event
 
-// Lista de eventos de Inicio. DiffUtil por id (y por contenido, al ser Event un data class) para
-// animar solo lo que cambia. El click se delega via `onClick`: hoy es un seam (TODO detalle).
-class HomeEventAdapter(
+// Lista de tarjetas de evento, compartida por Inicio y Consultar. DiffUtil por id (y por
+// contenido, al ser Event un data class) para animar solo lo que cambia. El click se delega
+// via `onClick` (navegar al Detalle).
+class EventListAdapter(
     private val onClick: (Event) -> Unit,
-) : ListAdapter<Event, HomeEventAdapter.EventViewHolder>(DIFF) {
+) : ListAdapter<Event, EventListAdapter.EventViewHolder>(DIFF) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
         val binding = ItemEventBinding.inflate(LayoutInflater.from(parent.context), parent, false)

@@ -1,4 +1,4 @@
-package com.eddndev.purpura.ui.home
+package com.eddndev.purpura.ui.common
 
 import android.content.Context
 import androidx.annotation.ColorRes
@@ -6,6 +6,7 @@ import androidx.annotation.StringRes
 import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.model.EventStatus
 import com.eddndev.purpura.domain.model.EventType
+import com.eddndev.purpura.domain.model.Reminder
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -13,12 +14,14 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 // Traduce los enums del dominio (codigos ASCII) a etiquetas en espanol + colores de marca, y
-// formatea el instante a hora local. Vive en la capa de UI: el ViewModel no resuelve recursos.
+// formatea el instante a hora local. Vive en la capa de UI (compartido por Inicio, Consultar y
+// Detalle): el ViewModel no resuelve recursos.
 object EventDisplay {
 
     private val LOCALE = Locale("es", "MX")
     private val TIME = DateTimeFormatter.ofPattern("HH:mm", LOCALE)
     private val DATE = DateTimeFormatter.ofPattern("EEE d MMM", LOCALE)
+    private val FULL_DATE = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM yyyy", LOCALE)
 
     @StringRes
     fun typeLabel(type: EventType): Int = when (type) {
@@ -80,5 +83,22 @@ object EventDisplay {
             else -> dateTime.format(DATE).replaceFirstChar { it.titlecase(LOCALE) }
         }
         return context.getString(R.string.home_event_when, day, dateTime.format(TIME))
+    }
+
+    // "Viernes 12 de junio 2026" para el encabezado de Detalle (fecha completa en la zona local).
+    fun formatFullDate(startsAt: Instant): String =
+        startsAt.atZone(ZoneId.systemDefault()).format(FULL_DATE)
+            .replaceFirstChar { it.titlecase(LOCALE) }
+
+    // "15:30" en la zona del dispositivo.
+    fun formatTime(startsAt: Instant): String =
+        startsAt.atZone(ZoneId.systemDefault()).format(TIME)
+
+    @StringRes
+    fun reminderLabel(reminder: Reminder): Int = when (reminder) {
+        Reminder.none -> R.string.reminder_none
+        Reminder.at_time -> R.string.reminder_at_time
+        Reminder.ten_minutes_before -> R.string.reminder_ten_minutes_before
+        Reminder.one_day_before -> R.string.reminder_one_day_before
     }
 }

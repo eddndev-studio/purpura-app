@@ -57,7 +57,11 @@
         android:id="@+id/eventDetailFragment"
         android:name="com.eddndev.purpura.ui.detail.EventDetailFragment"
         android:label="@string/title_detail"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_event_detail">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/authFragment"
