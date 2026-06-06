@@ -2,9 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Notificaciones locales de recordatorio (runtime en API 33+). Alarmas inexactas: no se
-         requiere SCHEDULE_EXACT_ALARM. -->
+    <!-- Notificaciones locales de recordatorio (runtime en API 33+). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Alarmas EXACTAS: el recordatorio debe disparar a la hora aun en Doze. USE_EXACT_ALARM
+         (API 33+) se auto-concede a apps cuya funcion central son recordatorios/alarmas, como
+         Purpura; SCHEDULE_EXACT_ALARM cubre API 31-32. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <application
         android:name=".PurpuraApplication"

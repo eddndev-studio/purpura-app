@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.domain.model.triggerAt
 import com.eddndev.purpura.domain.repository.ReminderScheduler
@@ -13,10 +14,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 // Implementacion real del puerto de recordatorios (REQ-NOTIF-001) con AlarmManager. El instante de
-// disparo lo da la regla pura del dominio (Reminder.triggerAt). Se programa una alarma INEXACTA
-// (setAndAllowWhileIdle): no requiere el permiso de alarma exacta ni su pantalla de acceso especial,
-// y un margen de minutos es aceptable para un recordatorio. Al dispararse, ReminderReceiver publica
-// la notificacion. cancel() retira la alarma pendiente.
+// disparo lo da la regla pura del dominio (Reminder.triggerAt). Programa una alarma EXACTA
+// (setExactAndAllowWhileIdle) para que el aviso dispare a la hora aun con el dispositivo en Doze;
+// Purpura declara USE_EXACT_ALARM (API 33+, aplica por ser app de recordatorios). Si el sistema no
+// concede alarmas exactas (p.ej. API 31-32 con el permiso revocado) cae a una inexacta. Al
+// dispararse, ReminderReceiver publica la notificacion. cancel() retira la alarma pendiente.
+//
+// NOTA: en OEM agresivos (Vivo/Xiaomi/Huawei/etc.) la alarma puede no dispararse aunque sea exacta si
+// la app no esta exenta de la optimizacion de bateria / autostart: eso es ajuste del dispositivo, no
+// del codigo.
 //
 // TODO(#8): reprogramar tras reinicio (BootReceiver + ScheduleReminderUseCase). AlarmManager pierde
 // las alarmas al apagar el dispositivo; no es critico para la entrega.
@@ -45,8 +51,18 @@ class AlarmManagerReminderScheduler @Inject constructor(
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
-        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger.toEpochMilli(), pendingIntent)
+        val triggerMillis = trigger.toEpochMilli()
+        if (canScheduleExact()) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMillis, pendingIntent)
+        } else {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMillis, pendingIntent)
+        }
     }
+
+    // API 31+ exige permiso para alarmas exactas; antes no se requeria. canScheduleExactAlarms()
+    // refleja si el sistema lo concede (con USE_EXACT_ALARM es true en API 33+). Si no, inexacta.
+    private fun canScheduleExact(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
 
     override fun cancel(eventId: String) {
         // FLAG_NO_CREATE devuelve null si no habia alarma: nada que cancelar.
