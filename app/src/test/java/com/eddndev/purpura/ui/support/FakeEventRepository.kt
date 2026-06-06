@@ -49,6 +49,15 @@ internal class FakeEventRepository : EventRepository {
     var updateError: Throwable? = null
     var updateResult: Event? = null
 
+    // create()
+    val createdDrafts = mutableListOf<NewEventDraft>()
+    var createError: Throwable? = null
+    var createResult: Event? = null
+
+    // Si se asigna, create() se suspende esperando este gate (para probar el guard de envio en
+    // curso). El draft ya quedo registrado en `createdDrafts` antes de suspenderse.
+    var createGate: CompletableDeferred<Unit>? = null
+
     override suspend fun query(query: EventQuery): Page<Event> {
         queries += query
         queryGate?.await()
@@ -82,7 +91,12 @@ internal class FakeEventRepository : EventRepository {
     override fun observeUpcoming(today: LocalDate, daysAhead: Int): Flow<List<Event>> = notUsed()
     override fun observeMonth(year: Int, month: Int): Flow<List<Event>> = notUsed()
     override suspend fun refreshRange(from: LocalDate, to: LocalDate) = notUsed()
-    override suspend fun create(draft: NewEventDraft): Event = notUsed()
+    override suspend fun create(draft: NewEventDraft): Event {
+        createdDrafts += draft
+        createGate?.await()
+        createError?.let { throw it }
+        return createResult ?: error("createResult no configurado en el fake")
+    }
     override suspend fun export(query: EventQuery?): ExportDocument = notUsed()
     override suspend fun import(request: ImportRequest): ImportResult = notUsed()
 

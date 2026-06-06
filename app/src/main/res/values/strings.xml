@@ -130,6 +130,31 @@
     <string name="detail_load_error_title">No se pudo cargar el evento</string>
     <string name="detail_retry">Reintentar</string>
 
+    <!-- Anadir evento: formulario (REQ-ADD-001..009) -->
+    <string name="add_event_description_label">Descripción</string>
+    <string name="add_event_contact_label">Contacto</string>
+    <string name="add_event_place_label">Lugar (opcional)</string>
+    <string name="add_event_place_helper">Por ahora escribe el lugar; el selector de mapa llegará pronto.</string>
+    <string name="add_event_type_label">Tipo</string>
+    <string name="add_event_status_label">Estatus</string>
+    <string name="add_event_reminder_label">Recordatorio</string>
+    <string name="add_event_date_label">Fecha</string>
+    <string name="add_event_time_label">Hora</string>
+    <string name="add_event_pick_date">Elegir fecha</string>
+    <string name="add_event_pick_time">Elegir hora</string>
+    <string name="add_event_date_picker_title">Selecciona la fecha</string>
+    <string name="add_event_time_picker_title">Selecciona la hora</string>
+    <string name="add_event_save">Guardar evento</string>
+    <string name="add_event_error_description">Escribe una descripción.</string>
+    <string name="add_event_error_contact">Escribe el nombre del contacto.</string>
+    <string name="add_event_error_datetime">Elige la fecha y la hora.</string>
+
+    <!-- Notificaciones de recordatorio (REQ-NOTIF-001) -->
+    <string name="reminder_channel_name">Recordatorios</string>
+    <string name="reminder_channel_description">Avisos de tus próximos eventos.</string>
+    <string name="reminder_notification_title">Recordatorio de evento</string>
+    <string name="reminder_notification_fallback">Tienes un evento próximo.</string>
+
     <!-- Etiquetas de recordatorio (UI en español; el código del dominio es ASCII) -->
     <string name="reminder_none">Sin recordatorio</string>
     <string name="reminder_at_time">A la hora del evento</string>

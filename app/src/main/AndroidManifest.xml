@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Notificaciones locales de recordatorio (runtime en API 33+). Alarmas inexactas: no se
+         requiere SCHEDULE_EXACT_ALARM. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".PurpuraApplication"
@@ -22,5 +25,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Recibe la alarma del recordatorio y publica la notificacion (REQ-NOTIF-001). No
+             exportado: solo lo dispara el AlarmManager de la propia app. -->
+        <receiver
+            android:name=".data.reminder.ReminderReceiver"
+            android:exported="false" />
     </application>
 </manifest>

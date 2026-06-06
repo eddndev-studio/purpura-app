@@ -15,7 +15,7 @@
         android:id="@+id/addEventFragment"
         android:name="com.eddndev.purpura.ui.addevent.AddEventFragment"
         android:label="@string/title_add_event"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_add_event" />
 
     <fragment
         android:id="@+id/queryFragment"

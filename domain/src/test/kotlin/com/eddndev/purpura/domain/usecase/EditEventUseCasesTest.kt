@@ -33,6 +33,18 @@ class EditEventUseCasesTest {
     }
 
     @Test
+    fun `marcar realizado cancela el recordatorio en vez de reprogramarlo`() = runTest {
+        val updated = TestData.event(status = EventStatus.realizado)
+        repository.changeStatusResult = updated
+        val useCase = ChangeEventStatusUseCase(repository, scheduler)
+
+        useCase("e1", EventStatus.realizado)
+
+        assertEquals(listOf("e1"), scheduler.cancelled)
+        assertTrue(scheduler.scheduled.isEmpty())
+    }
+
+    @Test
     fun `eliminar borra y cancela el recordatorio`() = runTest {
         val useCase = DeleteEventUseCase(repository, scheduler)
 
