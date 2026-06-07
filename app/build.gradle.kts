@@ -60,13 +60,13 @@ android {
         // recurso ni BuildConfig, para no exponerla en el codigo.
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
 
-        // Base URL de la API Go (debe terminar en /). Debug apunta al loopback del host del
-        // emulador (10.0.2.2): requiere el backend corriendo localmente para probar en vivo.
-        buildConfigField(
-            "String",
-            "API_BASE_URL",
-            "\"http://10.0.2.2:8080/api/v1/\"",
-        )
+        // Base URL de la API Go (debe terminar en /). Debug apunta por defecto al loopback del host
+        // del emulador (10.0.2.2): requiere el backend corriendo localmente. Para probar en un device
+        // fisico contra prod, pasa -PdebugApiBaseUrl=https://api.purpura.eddn.dev/api/v1/ (o define
+        // debugApiBaseUrl en gradle.properties). Release siempre usa el dominio de prod (mas abajo).
+        val debugApiBaseUrl =
+            (project.findProperty("debugApiBaseUrl") as String?) ?: "http://10.0.2.2:8080/api/v1/"
+        buildConfigField("String", "API_BASE_URL", "\"$debugApiBaseUrl\"")
     }
 
     signingConfigs {
