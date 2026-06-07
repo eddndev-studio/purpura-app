@@ -121,6 +121,10 @@ class AddEventFragment : Fragment() {
         binding.timeButton.setOnClickListener { openTimePicker() }
         binding.pickLocationButton.setOnClickListener { openLocationPicker() }
         binding.pickContactButton.setOnClickListener { ensureContactsPermissionThenPick() }
+        // El campo de contacto es de solo lectura: tocarlo (o su layout) abre el selector del sistema,
+        // de modo que el contacto siempre sale de la lista del telefono (REQ-ADD-002).
+        binding.contactInput.setOnClickListener { ensureContactsPermissionThenPick() }
+        binding.contactLayout.setOnClickListener { ensureContactsPermissionThenPick() }
         binding.saveButton.setOnClickListener { onSave() }
 
         listenForPickedLocation()
