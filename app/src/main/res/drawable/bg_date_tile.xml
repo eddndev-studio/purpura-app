@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tesela de fecha (date-tile) tintable. El color de contenedor se aplica via backgroundTint
+     en el adapter segun el tipo del evento. Esquinas 12dp concentricas con la card. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/white" />
+    <corners android:radius="@dimen/radius_tile" />
+</shape>

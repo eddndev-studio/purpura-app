@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tarjeta de un evento en la lista de Inicio. Las etiquetas de tipo/estatus y el texto de
-     fecha/hora se resuelven en HomeEventAdapter; aqui solo se declara la estructura. -->
+<!-- Tarjeta de un evento (Inicio / Consultar / dia de Calendario). Columna izquierda tipo "ticket":
+     tesela de fecha tintada por TIPO (mes pequeno arriba + dia grande) con la hora justo debajo, de
+     modo que la columna izquierda no deja hueco. A la derecha, la columna de contenido (titulo,
+     contacto, chips) que aprovecha el ancho. El chevron es la affordance de "abre Detalle".
+     Etiquetas, colores, fecha/hora y contentDescription se resuelven en EventListAdapter. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -19,32 +22,67 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/space_md">
 
-        <TextView
-            android:id="@+id/dateText"
-            android:layout_width="0dp"
+        <!-- LEADING date-tile: mes pequeno arriba + dia grande. backgroundTint por tipo en el adapter. -->
+        <LinearLayout
+            android:id="@+id/dateTile"
+            android:layout_width="@dimen/date_tile_size"
             android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:ellipsize="end"
+            android:background="@drawable/bg_date_tile"
+            android:backgroundTint="@color/purpura_primary_container"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/space_sm"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/monthText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.08"
+                android:textAllCaps="true"
+                android:textAppearance="@style/TextAppearance.Purpura.LabelSmall"
+                android:textColor="@color/purpura_on_primary_container"
+                tools:text="JUN" />
+
+            <TextView
+                android:id="@+id/dayNumberText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:textAppearance="@style/TextAppearance.Purpura.HeadlineMedium"
+                android:textColor="@color/purpura_on_primary_container"
+                tools:text="30" />
+        </LinearLayout>
+
+        <!-- Hora justo debajo de la tesela (llena la columna izquierda, sin hueco). Acento morado. -->
+        <TextView
+            android:id="@+id/timeText"
+            android:layout_width="@dimen/date_tile_size"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:gravity="center"
             android:textAppearance="@style/TextAppearance.Purpura.LabelLarge"
             android:textColor="@color/purpura_primary"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Hoy · 15:30" />
+            app:layout_constraintStart_toStartOf="@id/dateTile"
+            app:layout_constraintTop_toBottomOf="@id/dateTile"
+            tools:text="22:02" />
 
+        <!-- RIGHT COLUMN: titulo, contacto, chips. width=0dp aprovecha el ancho. -->
         <TextView
             android:id="@+id/descriptionText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xs"
+            android:layout_marginStart="@dimen/space_md"
             android:ellipsize="end"
             android:maxLines="2"
             android:textAppearance="@style/TextAppearance.Purpura.TitleMedium"
             android:textColor="@color/purpura_on_surface"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/dateText"
-            tools:text="Revisión de avance del proyecto final" />
+            app:layout_constraintEnd_toStartOf="@id/chevron"
+            app:layout_constraintStart_toEndOf="@id/dateTile"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Revision de avance del proyecto final del semestre" />
 
         <TextView
             android:id="@+id/contactText"
@@ -55,18 +93,21 @@
             android:maxLines="1"
             android:textAppearance="@style/TextAppearance.Purpura.BodySmall"
             android:textColor="@color/purpura_on_surface_variant"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/descriptionText"
+            app:layout_constraintStart_toStartOf="@id/descriptionText"
             app:layout_constraintTop_toBottomOf="@id/descriptionText"
-            tools:text="María González" />
+            tools:text="Maria Gonzalez" />
 
+        <!-- chips de tipo + estatus (pill). goneMarginTop colapsa el hueco cuando contacto=GONE. -->
         <LinearLayout
+            android:id="@+id/badgeRow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_sm"
             android:orientation="horizontal"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/contactText">
+            app:layout_constraintStart_toStartOf="@id/descriptionText"
+            app:layout_constraintTop_toBottomOf="@id/contactText"
+            app:layout_goneMarginTop="@dimen/space_sm">
 
             <TextView
                 android:id="@+id/typeBadge"
@@ -95,5 +136,19 @@
                 tools:text="Pendiente"
                 tools:textColor="@color/status_pendiente" />
         </LinearLayout>
+
+        <!-- chevron: affordance "abre Detalle". Reusa ic_chevron_right (24dp) escalado a 20dp;
+             app:tint sobreescribe el tint=primary del vector por on_surface_variant. -->
+        <ImageView
+            android:id="@+id/chevron"
+            android:layout_width="@dimen/chevron_size"
+            android:layout_height="@dimen/chevron_size"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_chevron_right"
+            app:layout_constraintBottom_toBottomOf="@id/descriptionText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/descriptionText"
+            app:tint="@color/purpura_on_surface_variant" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
