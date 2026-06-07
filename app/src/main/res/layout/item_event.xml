@@ -98,7 +98,23 @@
             app:layout_constraintTop_toBottomOf="@id/descriptionText"
             tools:text="Maria Gonzalez" />
 
-        <!-- chips de tipo + estatus (pill). goneMarginTop colapsa el hueco cuando contacto=GONE. -->
+        <!-- Ubicacion (REQ-HOME-001: el item muestra la ubicacion). GONE si el evento no la tiene;
+             el goneMarginTop del badgeRow colapsa el hueco. El mapa completo vive en el Detalle. -->
+        <TextView
+            android:id="@+id/locationText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xxs"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Purpura.BodySmall"
+            android:textColor="@color/purpura_on_surface_variant"
+            app:layout_constraintEnd_toEndOf="@id/descriptionText"
+            app:layout_constraintStart_toStartOf="@id/descriptionText"
+            app:layout_constraintTop_toBottomOf="@id/contactText"
+            tools:text="Biblioteca central" />
+
+        <!-- chips de tipo + estatus (pill). goneMarginTop colapsa el hueco cuando contacto/ubicacion=GONE. -->
         <LinearLayout
             android:id="@+id/badgeRow"
             android:layout_width="wrap_content"
@@ -106,7 +122,7 @@
             android:layout_marginTop="@dimen/space_sm"
             android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="@id/descriptionText"
-            app:layout_constraintTop_toBottomOf="@id/contactText"
+            app:layout_constraintTop_toBottomOf="@id/locationText"
             app:layout_goneMarginTop="@dimen/space_sm">
 
             <TextView

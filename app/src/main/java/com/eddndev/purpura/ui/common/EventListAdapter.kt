@@ -50,6 +50,11 @@ class EventListAdapter(
             binding.contactText.text = contactName
             binding.contactText.isVisible = contactName.isNotBlank()
 
+            // Ubicacion opcional (REQ-HOME-001): etiqueta o "en el mapa"; GONE si el evento no la tiene.
+            val locationSummary = EventDisplay.locationSummary(context, event.location)
+            binding.locationText.text = locationSummary
+            binding.locationText.isVisible = locationSummary != null
+
             binding.typeBadge.apply {
                 setText(EventDisplay.typeLabel(event.type))
                 setTextColor(typeColor)

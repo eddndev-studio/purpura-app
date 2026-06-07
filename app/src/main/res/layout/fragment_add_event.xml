@@ -33,19 +33,25 @@
                     android:maxLines="4" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Contacto -->
+            <!-- Contacto (REQ-ADD-002): se elige SIEMPRE de la lista del telefono. El campo es de solo
+                 lectura (focusable=false) y abre el selector al tocarlo; no se escribe a mano. -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/contactLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="@string/add_event_contact_label">
+                android:hint="@string/add_event_contact_label"
+                app:helperText="@string/add_event_contact_helper"
+                app:helperTextEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/contactInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPersonName|textCapWords"
+                    android:clickable="true"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:inputType="none"
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 

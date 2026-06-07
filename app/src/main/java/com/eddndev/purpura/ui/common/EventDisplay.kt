@@ -6,6 +6,7 @@ import androidx.annotation.StringRes
 import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.model.EventStatus
 import com.eddndev.purpura.domain.model.EventType
+import com.eddndev.purpura.domain.model.Location
 import com.eddndev.purpura.domain.model.Reminder
 import java.time.Instant
 import java.time.LocalDate
@@ -112,6 +113,15 @@ object EventDisplay {
     // "Viernes 12 de junio 2026" para el dia seleccionado del Calendario (a partir de una fecha).
     fun formatFullDate(date: LocalDate): String =
         date.format(FULL_DATE).replaceFirstChar { it.titlecase(LOCALE) }
+
+    // Resumen de ubicacion para la tarjeta de lista (Inicio/Consultar): la etiqueta legible si la
+    // hay; si no, pero el evento tiene coordenadas reales (lat/lng != 0), un texto generico; null
+    // cuando no hay ninguna ubicacion -> el adapter oculta la linea. El mapa completo vive en Detalle.
+    fun locationSummary(context: Context, location: Location): String? {
+        location.label?.takeIf { it.isNotBlank() }?.let { return it }
+        val hasCoordinates = location.lat != 0.0 || location.lng != 0.0
+        return if (hasCoordinates) context.getString(R.string.event_location_on_map) else null
+    }
 
     @StringRes
     fun reminderLabel(reminder: Reminder): Int = when (reminder) {
