@@ -36,17 +36,26 @@
     <color name="status_aplazado">#C4C7CC</color>
     <color name="status_aplazado_container">#3A3D42</color>
 
+    <!-- Tipo de evento (oscuro). Los *_container DEBEN redefinirse aqui (no heredar de claro): el
+         fg event_* de noche es claro y sobre el container claro heredado daria ~1.30:1 (falla AA).
+         Estos tonos oscuros (T20-25) emparejan con su fg y pasan AA 6.9-8.5:1 (verificado). -->
     <color name="event_cita">#D0BCFF</color>
+    <color name="event_cita_container">#3A1A52</color>
     <color name="event_junta">#B6C4FF</color>
+    <color name="event_junta_container">#27315F</color>
     <color name="event_entrega_proyecto">#7DDBCB</color>
+    <color name="event_entrega_proyecto_container">#0E3A33</color>
     <color name="event_examen">#FFB0CC</color>
+    <color name="event_examen_container">#54122F</color>
     <color name="event_otros">#CAC4D0</color>
+    <color name="event_otros_container">#3A363F</color>
 
     <color name="heatmap_0">#2A2630</color>
     <color name="heatmap_1">#3F2A57</color>
     <color name="heatmap_2">#5A2A87</color>
     <color name="heatmap_3">#7B2AB8</color>
     <color name="heatmap_4">#A85CE0</color>
-    <!-- En noche heatmap_4 es claro (#A85CE0): el texto del mosaico mas intenso va oscuro. -->
-    <color name="heatmap_label_intense">#1D1A20</color>
+    <!-- En noche heatmap_4 es claro (#A85CE0): el texto del mosaico mas intenso va oscuro.
+         Negro puro para AA (#1D1A20 daba 4.32, roza; #000000 da 5.27). -->
+    <color name="heatmap_label_intense">#000000</color>
 </resources>

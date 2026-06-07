@@ -37,5 +37,22 @@
         <item name="chipStyle">@style/Widget.Purpura.Chip</item>
         <item name="textInputStyle">@style/Widget.Purpura.TextInputLayout</item>
         <item name="floatingActionButtonStyle">@style/Widget.Purpura.FAB</item>
+        <item name="extendedFloatingActionButtonStyle">@style/Widget.Purpura.ExtendedFAB</item>
+
+        <!-- Tipografia cableada al tema: punto unico de palanca de marca. Hoy es passthrough
+             (TextAppearance.Purpura.* hereda M3 identico), pero permite inyectar la fuente de
+             marca en un solo lugar sin tocar cada layout. -->
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Purpura.DisplaySmall</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Purpura.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Purpura.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Purpura.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Purpura.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Purpura.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Purpura.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Purpura.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Purpura.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Purpura.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Purpura.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Purpura.LabelSmall</item>
     </style>
 </resources>

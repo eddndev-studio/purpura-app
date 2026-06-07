@@ -36,6 +36,10 @@
     <style name="Widget.Purpura.FAB" parent="Widget.Material3.FloatingActionButton.Primary">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Purpura.Pill</item>
     </style>
+    <!-- ExtendedFAB: unico widget que no recibia forma del tema. Pill (capsula) como el resto. -->
+    <style name="Widget.Purpura.ExtendedFAB" parent="Widget.Material3.ExtendedFloatingActionButton.Icon.Primary">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Purpura.Pill</item>
+    </style>
     <!-- Card de evento: superficie, NO pill -->
     <style name="Widget.Purpura.Card" parent="Widget.Material3.CardView.Elevated">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Purpura.Medium</item>
