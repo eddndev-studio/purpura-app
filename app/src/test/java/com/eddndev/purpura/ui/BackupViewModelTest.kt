@@ -3,8 +3,10 @@ package com.eddndev.purpura.ui
 import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.error.DomainError
 import com.eddndev.purpura.domain.usecase.backup.ExportEventsUseCase
+import com.eddndev.purpura.domain.repository.DriveNotAuthorizedException
 import com.eddndev.purpura.ui.backup.BackupViewModel
 import com.eddndev.purpura.ui.support.FakeBackupFileStore
+import com.eddndev.purpura.ui.support.FakeCloudBackupRepository
 import com.eddndev.purpura.ui.support.FakeEventRepository
 import com.eddndev.purpura.ui.support.sampleEvent
 import com.eddndev.purpura.ui.support.sampleExportDocument
@@ -34,6 +36,7 @@ class BackupViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val repository = FakeEventRepository()
     private val fileStore = FakeBackupFileStore()
+    private val cloudBackup = FakeCloudBackupRepository()
 
     @Before
     fun setUp() = Dispatchers.setMain(dispatcher)
@@ -44,6 +47,7 @@ class BackupViewModelTest {
     private fun buildViewModel() = BackupViewModel(
         exportEvents = ExportEventsUseCase(repository),
         fileStore = fileStore,
+        cloudBackup = cloudBackup,
     )
 
     @Test
@@ -126,6 +130,47 @@ class BackupViewModelTest {
 
         viewModel.saveBackup { ByteArrayOutputStream() } // ya no hay documento pendiente
         assertTrue(fileStore.written.isEmpty())
+    }
+
+    @Test
+    fun `respaldar en Drive exporta sube y reporta el conteo`() = runTest(dispatcher) {
+        repository.exportResult = sampleExportDocument(listOf(sampleEvent("a"), sampleEvent("b")))
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.backupToDrive()
+
+        val (fileName, document) = cloudBackup.uploaded.single()
+        assertTrue(fileName.startsWith("purpura-respaldo-") && fileName.endsWith(".json"))
+        assertEquals(2, document.count)
+        assertEquals(2, viewModel.uiState.value.savedCount)
+        assertFalse(viewModel.uiState.value.isWorking)
+    }
+
+    @Test
+    fun `respaldar en Drive sin eventos avisa y no sube nada`() = runTest(dispatcher) {
+        repository.exportResult = sampleExportDocument(emptyList())
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.backupToDrive()
+
+        assertEquals(R.string.backup_empty, viewModel.uiState.value.infoRes)
+        assertFalse(viewModel.uiState.value.isWorking)
+        assertTrue(cloudBackup.uploaded.isEmpty())
+    }
+
+    @Test
+    fun `respaldar en Drive sin autorizacion pide iniciar sesion con Google`() = runTest(dispatcher) {
+        repository.exportResult = sampleExportDocument(listOf(sampleEvent("a")))
+        cloudBackup.uploadError = DriveNotAuthorizedException()
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.backupToDrive()
+
+        assertEquals(R.string.backup_drive_auth_needed, viewModel.uiState.value.errorRes)
+        assertFalse(viewModel.uiState.value.isWorking)
     }
 
     @Test

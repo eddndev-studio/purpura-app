@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.eddndev.purpura.R
 import com.eddndev.purpura.data.backup.BackupFileStore
 import com.eddndev.purpura.domain.backup.ExportDocument
+import com.eddndev.purpura.domain.repository.CloudBackupRepository
+import com.eddndev.purpura.domain.repository.DriveNotAuthorizedException
 import com.eddndev.purpura.domain.usecase.backup.ExportEventsUseCase
 import com.eddndev.purpura.ui.common.toErrorMessageRes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +31,7 @@ import javax.inject.Inject
 class BackupViewModel @Inject constructor(
     private val exportEvents: ExportEventsUseCase,
     private val fileStore: BackupFileStore,
+    private val cloudBackup: CloudBackupRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BackupUiState())
@@ -79,6 +82,41 @@ class BackupViewModel @Inject constructor(
                     // Escribir es E/S local hacia el Uri elegido (Drive sincroniza, etc.): un aviso
                     // de archivo es mas honesto que el generico de "ocurrio un error".
                     _uiState.update { it.copy(isWorking = false, errorRes = R.string.backup_error_save) }
+                }
+        }
+    }
+
+    // Respaldo directo en Google Drive (REQ-BACKUP, API de Drive). Un solo paso: exporta del servidor
+    // y sube el documento via la API de Drive (no usa el selector del sistema). El Fragment asegura la
+    // autorizacion de Google ANTES de llamar aqui; si aun asi falta, el store lanza
+    // DriveNotAuthorizedException y se muestra el aviso correspondiente.
+    fun backupToDrive() {
+        if (_uiState.value.isWorking) return
+        _uiState.update { it.copy(isWorking = true, errorRes = null, infoRes = null) }
+        viewModelScope.launch {
+            runCatching {
+                val document = exportEvents()
+                // Respaldo vacio: avisa y no crea archivo en Drive (paridad con el camino de archivo).
+                if (document.count == 0) null else {
+                    cloudBackup.upload(suggestedFileName(), document)
+                    document.count
+                }
+            }
+                .onSuccess { count ->
+                    if (count == null) {
+                        _uiState.update { it.copy(isWorking = false, infoRes = R.string.backup_empty) }
+                    } else {
+                        _uiState.update { it.copy(isWorking = false, savedCount = count) }
+                    }
+                }
+                .onFailure { throwable ->
+                    if (throwable is CancellationException) throw throwable
+                    val messageRes = if (throwable is DriveNotAuthorizedException) {
+                        R.string.backup_drive_auth_needed
+                    } else {
+                        throwable.toErrorMessageRes()
+                    }
+                    _uiState.update { it.copy(isWorking = false, errorRes = messageRes) }
                 }
         }
     }

@@ -171,11 +171,15 @@
         <item quantity="other">%1$d eventos el %2$s</item>
     </plurals>
 
-    <!-- Respaldo y restauracion (REQ-BACKUP-001/002). El archivo es un .json elegido con el
-         selector del sistema (Storage Access Framework), que ofrece Drive, Dropbox o el dispositivo. -->
+    <!-- Respaldo y restauracion (REQ-BACKUP-001/002). Dos caminos: directo en Google Drive (API de
+         Drive, scope drive.file) o en un archivo .json via el selector del sistema (Storage Access
+         Framework), que tambien ofrece Drive/Dropbox/dispositivo. -->
     <string name="backup_title">Respaldo de eventos</string>
-    <string name="backup_body">Guarda todos tus eventos en un archivo .json. El selector del sistema te deja elegir Google Drive, Dropbox o tu dispositivo.</string>
+    <string name="backup_body">Guarda todos tus eventos en tu Google Drive, o en un archivo .json en el dispositivo.</string>
     <string name="backup_action">Respaldar mis eventos</string>
+    <string name="backup_action_drive">Respaldar en Google Drive</string>
+    <string name="backup_action_file">Guardar en un archivo</string>
+    <string name="backup_drive_auth_needed">Inicia sesión con Google para respaldar en Drive.</string>
     <string name="backup_empty">No tienes eventos que respaldar.</string>
     <string name="backup_error_save">No se pudo guardar el respaldo.</string>
     <plurals name="backup_result">
@@ -184,8 +188,13 @@
     </plurals>
 
     <string name="restore_title">Restaurar eventos</string>
-    <string name="restore_body">Elige un archivo de respaldo .json de Purpura. Tus eventos se combinan con los actuales según su identificador.</string>
+    <string name="restore_body">Restaura tus eventos desde tu Google Drive o desde un archivo .json de Purpura. Se combinan con los actuales según su identificador.</string>
     <string name="restore_action">Elegir archivo de respaldo</string>
+    <string name="restore_action_drive">Restaurar desde Google Drive</string>
+    <string name="restore_action_file">Restaurar desde un archivo</string>
+    <string name="restore_drive_auth_needed">Inicia sesión con Google para restaurar desde Drive.</string>
+    <string name="restore_drive_empty">No hay respaldos de Purpura en tu Google Drive.</string>
+    <string name="restore_drive_pick_title">Elige un respaldo</string>
     <string name="restore_error_invalid_file">El archivo no es un respaldo válido de Purpura.</string>
     <string name="restore_result_summary">Restaurado: %1$d nuevos, %2$d actualizados, %3$d omitidos, %4$d con error</string>
 

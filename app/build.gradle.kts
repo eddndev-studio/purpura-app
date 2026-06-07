@@ -120,6 +120,23 @@ android {
         viewBinding = true
         buildConfig = true
     }
+
+    // El SDK de Drive (google-http-client y transitivas) trae metadatos en META-INF que chocan al
+    // empaquetar varios JARs. Se excluyen los no-codigo (licencias, avisos, indices, DEPENDENCIES).
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/INDEX.LIST",
+            )
+        }
+    }
 }
 
 dependencies {
@@ -154,6 +171,19 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.maps)
+
+    // Respaldo/Restauracion programatica en Google Drive (REQ-BACKUP, API de Drive). El SDK arrastra
+    // httpcomponents/guava-jdk5 (legacy, en conflicto con el resto) -> se excluyen; usamos el transporte
+    // NetHttp del propio google-http-client. La autorizacion la da el GoogleSignInAccount (scope
+    // drive.file: la app solo ve los archivos que ella crea). Ver [[purpura-gcloud-setup]].
+    implementation(libs.google.api.client.android) {
+        exclude(group = "org.apache.httpcomponents")
+        exclude(module = "guava-jdk5")
+    }
+    implementation(libs.google.api.services.drive) {
+        exclude(group = "org.apache.httpcomponents")
+        exclude(module = "guava-jdk5")
+    }
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
