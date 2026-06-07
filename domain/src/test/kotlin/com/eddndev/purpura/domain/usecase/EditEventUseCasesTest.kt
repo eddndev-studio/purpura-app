@@ -78,4 +78,17 @@ class EditEventUseCasesTest {
         assertEquals(listOf("e1" to patch), repository.patches)
         assertEquals(listOf(updated), scheduler.scheduled)
     }
+
+    @Test
+    fun `editar un evento ya realizado cancela el recordatorio en vez de reprogramarlo`() = runTest {
+        val updated = TestData.event(status = EventStatus.realizado)
+        repository.updateResult = updated
+        val patch = EventPatch(description = "Texto corregido")
+        val useCase = UpdateEventUseCase(repository, scheduler)
+
+        useCase("e1", patch)
+
+        assertEquals(listOf("e1"), scheduler.cancelled)
+        assertTrue(scheduler.scheduled.isEmpty())
+    }
 }

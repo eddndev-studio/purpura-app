@@ -30,7 +30,7 @@ class AddEventUseCaseTest {
     }
 
     @Test
-    fun `estatus no pendiente aplica el segundo paso y programa el evento final`() = runTest {
+    fun `crear como realizado aplica el segundo paso y cancela el recordatorio en vez de programarlo`() = runTest {
         val created = TestData.event(id = "e1", status = EventStatus.pendiente)
         val done = created.copy(status = EventStatus.realizado)
         repository.createResult = created
@@ -40,6 +40,21 @@ class AddEventUseCaseTest {
 
         assertEquals(done, result)
         assertEquals(listOf("e1" to EventStatus.realizado), repository.statusChanges)
-        assertEquals(listOf(done), scheduler.scheduled)
+        assertTrue(scheduler.scheduled.isEmpty())
+        assertEquals(listOf("e1"), scheduler.cancelled)
+    }
+
+    @Test
+    fun `crear como aplazado programa el recordatorio del evento final`() = runTest {
+        val created = TestData.event(id = "e1", status = EventStatus.pendiente)
+        val postponed = created.copy(status = EventStatus.aplazado)
+        repository.createResult = created
+        repository.changeStatusResult = postponed
+
+        val result = useCase(TestData.draft, EventStatus.aplazado)
+
+        assertEquals(postponed, result)
+        assertEquals(listOf(postponed), scheduler.scheduled)
+        assertTrue(scheduler.cancelled.isEmpty())
     }
 }

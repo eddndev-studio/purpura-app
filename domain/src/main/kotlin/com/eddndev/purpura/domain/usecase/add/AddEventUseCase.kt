@@ -5,12 +5,13 @@ import com.eddndev.purpura.domain.model.EventStatus
 import com.eddndev.purpura.domain.model.NewEventDraft
 import com.eddndev.purpura.domain.repository.EventRepository
 import com.eddndev.purpura.domain.repository.ReminderScheduler
+import com.eddndev.purpura.domain.repository.sync
 import javax.inject.Inject
 
 // REQ-ADD-001..009. Doble paso (06-app-architecture §4.3): POST /events crea siempre con
 // status=pendiente (contrato §5.5); si el estatus elegido en REQ-ADD-007 no es pendiente,
-// se aplica con PATCH /events/{id}/status. Al confirmar, programa el recordatorio local
-// (REQ-NOTIF-001; schedule respeta reminder=none = no programa).
+// se aplica con PATCH /events/{id}/status. Al confirmar, sincroniza el recordatorio local
+// (REQ-NOTIF-001; sync no programa si el evento ya es realizado ni si reminder=none).
 class AddEventUseCase @Inject constructor(
     private val repository: EventRepository,
     private val reminderScheduler: ReminderScheduler,
@@ -22,7 +23,7 @@ class AddEventUseCase @Inject constructor(
         } else {
             created
         }
-        reminderScheduler.schedule(event)
+        reminderScheduler.sync(event)
         return event
     }
 }
