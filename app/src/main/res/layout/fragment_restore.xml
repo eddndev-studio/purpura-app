@@ -44,13 +44,23 @@
             android:textColor="@color/purpura_on_surface_variant" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/restoreButton"
+            android:id="@+id/restoreDriveButton"
             style="@style/Widget.Purpura.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_xl"
-            android:text="@string/restore_action"
+            android:text="@string/restore_action_drive"
             app:icon="@drawable/ic_cloud_download" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/restoreFileButton"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/restore_action_file"
+            app:icon="@drawable/ic_cloud_download"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Purpura.Pill" />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/restoreProgress"
