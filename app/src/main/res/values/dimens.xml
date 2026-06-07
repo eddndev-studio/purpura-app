@@ -20,6 +20,10 @@
     <dimen name="fab_size">56dp</dimen>
     <dimen name="icon_size">24dp</dimen>
     <dimen name="event_dot_size">8dp</dimen>
+    <!-- Tarjeta de evento: tesela de fecha leading, su radio y el chevron trailing. -->
+    <dimen name="date_tile_size">56dp</dimen>
+    <dimen name="radius_tile">10dp</dimen>
+    <dimen name="chevron_size">20dp</dimen>
     <dimen name="heatmap_cell_min">32dp</dimen>
     <dimen name="calendar_cell_min">48dp</dimen>
     <dimen name="elevation_card">1dp</dimen>

@@ -22,6 +22,8 @@ object EventDisplay {
     private val LOCALE = Locale("es", "MX")
     private val TIME = DateTimeFormatter.ofPattern("HH:mm", LOCALE)
     private val DATE = DateTimeFormatter.ofPattern("EEE d MMM", LOCALE)
+    private val DAY_NUMBER = DateTimeFormatter.ofPattern("dd", LOCALE)
+    private val MONTH_ABBREV = DateTimeFormatter.ofPattern("MMM", LOCALE)
     private val FULL_DATE = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM yyyy", LOCALE)
     private val MONTH_YEAR = DateTimeFormatter.ofPattern("MMMM yyyy", LOCALE)
 
@@ -95,6 +97,13 @@ object EventDisplay {
     // "15:30" en la zona del dispositivo.
     fun formatTime(startsAt: Instant): String =
         startsAt.atZone(ZoneId.systemDefault()).format(TIME)
+
+    // Tesela de fecha de la tarjeta: "30" (dia con cero) y "JUN" (mes abreviado en mayusculas).
+    fun formatDayNumber(startsAt: Instant): String =
+        startsAt.atZone(ZoneId.systemDefault()).format(DAY_NUMBER)
+
+    fun formatMonthAbbrev(startsAt: Instant): String =
+        startsAt.atZone(ZoneId.systemDefault()).format(MONTH_ABBREV).uppercase(LOCALE)
 
     // "Junio 2026" para el encabezado del Calendario / Mapa de calor.
     fun formatMonth(yearMonth: YearMonth): String =

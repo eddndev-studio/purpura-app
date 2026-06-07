@@ -88,6 +88,8 @@
     <string name="home_event_when">%1$s · %2$s</string>
     <string name="day_today">Hoy</string>
     <string name="day_tomorrow">Mañana</string>
+    <!-- a11y de la tarjeta: fecha completa, hora, titulo, tipo y estatus como una sola unidad. -->
+    <string name="event_card_a11y">%1$s, %2$s. %3$s. %4$s, %5$s</string>
 
     <!-- Etiquetas de tipo de evento (UI en español; el código del dominio es ASCII) -->
     <string name="event_type_cita">Cita</string>

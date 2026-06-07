@@ -4,9 +4,11 @@ import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.eddndev.purpura.R
 import com.eddndev.purpura.databinding.ItemEventBinding
 import com.eddndev.purpura.domain.model.Event
 
@@ -33,13 +35,24 @@ class EventListAdapter(
 
         fun bind(event: Event) {
             val context = binding.root.context
-            binding.dateText.text = EventDisplay.formatWhen(context, event.startsAt)
+            val typeColor = ContextCompat.getColor(context, EventDisplay.typeColor(event.type))
+
+            // Tesela de fecha leading: SIEMPRE morada (marca consistente); el tipo se lee en el chip.
+            // El fondo y los colores de la tesela/hora son estaticos en item_event.xml.
+            binding.monthText.text = EventDisplay.formatMonthAbbrev(event.startsAt)
+            binding.dayNumberText.text = EventDisplay.formatDayNumber(event.startsAt)
+            binding.timeText.text = EventDisplay.formatTime(event.startsAt)
+
             binding.descriptionText.text = event.description
-            binding.contactText.text = event.contact.name
+
+            // Contacto opcional: GONE si viene vacio (el goneMarginTop del badgeRow colapsa el hueco).
+            val contactName = event.contact.name
+            binding.contactText.text = contactName
+            binding.contactText.isVisible = contactName.isNotBlank()
 
             binding.typeBadge.apply {
                 setText(EventDisplay.typeLabel(event.type))
-                setTextColor(ContextCompat.getColor(context, EventDisplay.typeColor(event.type)))
+                setTextColor(typeColor)
                 backgroundTintList = ColorStateList.valueOf(
                     ContextCompat.getColor(context, EventDisplay.typeContainer(event.type)),
                 )
@@ -51,6 +64,16 @@ class EventListAdapter(
                     ContextCompat.getColor(context, EventDisplay.statusContainer(event.status)),
                 )
             }
+
+            // a11y: al fragmentar fecha/hora, TalkBack debe leer la tarjeta como una unidad.
+            binding.eventCard.contentDescription = context.getString(
+                R.string.event_card_a11y,
+                EventDisplay.formatFullDate(event.startsAt),
+                EventDisplay.formatTime(event.startsAt),
+                event.description,
+                context.getString(EventDisplay.typeLabel(event.type)),
+                context.getString(EventDisplay.statusLabel(event.status)),
+            )
 
             binding.root.setOnClickListener { onClick(event) }
         }
