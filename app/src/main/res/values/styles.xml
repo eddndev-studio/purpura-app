@@ -40,9 +40,13 @@
     <style name="Widget.Purpura.ExtendedFAB" parent="Widget.Material3.ExtendedFloatingActionButton.Icon.Primary">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Purpura.Pill</item>
     </style>
-    <!-- Card de evento: superficie, NO pill -->
+    <!-- Card de evento: superficie, NO pill. Fondo en surface_container (explicito) + stroke fino
+         para separarla del fondo, sobre todo en noche donde surface y background son casi iguales. -->
     <style name="Widget.Purpura.Card" parent="Widget.Material3.CardView.Elevated">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Purpura.Medium</item>
         <item name="cardElevation">@dimen/elevation_card</item>
+        <item name="cardBackgroundColor">@color/purpura_surface_container</item>
+        <item name="strokeColor">@color/purpura_outline_variant</item>
+        <item name="strokeWidth">1dp</item>
     </style>
 </resources>
