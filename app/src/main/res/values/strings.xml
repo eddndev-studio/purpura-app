@@ -227,6 +227,8 @@
     <!-- Selector de ubicacion en mapa (REQ-ADD-005) -->
     <string name="title_location_picker">Elegir ubicación</string>
     <string name="location_picker_hint">Toca el mapa para colocar el marcador.</string>
+    <string name="location_search_hint">Buscar un lugar</string>
+    <string name="location_search_error">No se pudo obtener el lugar. Intenta de nuevo.</string>
     <string name="location_picker_confirm">Usar esta ubicación</string>
     <string name="add_event_error_description">Escribe una descripción.</string>
     <string name="add_event_error_contact">Elige un contacto de tu teléfono.</string>

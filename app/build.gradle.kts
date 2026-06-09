@@ -112,10 +112,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         viewBinding = true
         buildConfig = true
@@ -136,6 +132,13 @@ android {
                 "META-INF/INDEX.LIST",
             )
         }
+    }
+}
+
+// Kotlin 2.x: el jvmTarget se configura via el DSL compilerOptions (kotlinOptions String es error).
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
@@ -166,11 +169,16 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.moshi.kotlin)
+    // Pin de kotlin-reflect a la version del compilador (2.3.x): moshi-kotlin lo arrastra en 1.8.21,
+    // que no puede leer la metadata Kotlin 2.3 de los modelos -> crash en runtime al deserializar.
+    implementation(libs.kotlin.reflect)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.security.crypto)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.maps)
+    // Busqueda de lugares (Places SDK, Autocomplete New) para el selector de ubicacion (REQ-ADD-005).
+    implementation(libs.places)
 
     // Respaldo/Restauracion programatica en Google Drive (REQ-BACKUP, API de Drive). El SDK arrastra
     // httpcomponents/guava-jdk5 (legacy, en conflicto con el resto) -> se excluyen; usamos el transporte
