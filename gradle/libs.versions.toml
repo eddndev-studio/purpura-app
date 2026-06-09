@@ -1,7 +1,7 @@
 [versions]
-agp = "8.6.0"
-kotlin = "1.9.24"
-ksp = "1.9.24-1.0.20"
+agp = "8.13.2"
+kotlin = "2.3.20"
+ksp = "2.3.9"
 coreKtx = "1.13.1"
 appcompat = "1.7.0"
 material = "1.12.0"
@@ -11,12 +11,12 @@ swiperefreshlayout = "1.1.0"
 navigation = "2.7.7"
 lifecycle = "2.8.4"
 fragment = "1.8.2"
-hilt = "2.51.1"
-room = "2.6.1"
+hilt = "2.58"
+room = "2.8.4"
 retrofit = "2.11.0"
 okhttp = "4.12.0"
-moshi = "1.15.1"
-coroutines = "1.8.1"
+moshi = "1.15.2"
+coroutines = "1.11.0"
 securityCrypto = "1.1.0-alpha06"
 playServicesAuth = "21.2.0"
 playServicesMaps = "18.2.0"
@@ -58,6 +58,9 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+# Pin de runtime: moshi-kotlin arrastra kotlin-reflect 1.8.21, que NO puede leer la metadata
+# Kotlin 2.3 de las clases de modelo -> crash al deserializar JSON. Forzar a la version del compilador.
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 google-api-client-android = { group = "com.google.api-client", name = "google-api-client-android", version.ref = "googleApiClient" }
 google-api-services-drive = { group = "com.google.apis", name = "google-api-services-drive", version.ref = "googleApiServicesDrive" }
 

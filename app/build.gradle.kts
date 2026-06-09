@@ -112,10 +112,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         viewBinding = true
         buildConfig = true
@@ -136,6 +132,13 @@ android {
                 "META-INF/INDEX.LIST",
             )
         }
+    }
+}
+
+// Kotlin 2.x: el jvmTarget se configura via el DSL compilerOptions (kotlinOptions String es error).
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
@@ -166,6 +169,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.moshi.kotlin)
+    // Pin de kotlin-reflect a la version del compilador (2.3.x): moshi-kotlin lo arrastra en 1.8.21,
+    // que no puede leer la metadata Kotlin 2.3 de los modelos -> crash en runtime al deserializar.
+    implementation(libs.kotlin.reflect)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.security.crypto)
