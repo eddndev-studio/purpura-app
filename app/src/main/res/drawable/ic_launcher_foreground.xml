@@ -1,15 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+    <!-- Logo de Purpura recentrado en la zona segura del icono adaptativo -->
     <group
-        android:scaleX="3"
-        android:scaleY="3"
-        android:translateX="18"
-        android:translateY="18">
+        android:translateX="-9.5"
+        android:translateY="9">
+        <!-- Marco del calendario -->
+        <path
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="44"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M313 399.326V644.549C313 680.561 342.152 709.713 378.164 709.713H600.236C636.248 709.713 665.4 680.561 665.4 644.549V451.629" />
+        <!-- Celdas del calendario -->
         <path
             android:fillColor="#FFFFFFFF"
-            android:pathData="M19,3h-1V1h-2v2H8V1H6v2H5C3.9,3 3,3.9 3,5v16c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2V5C21,3.9 20.1,3 19,3zM19,21H5V8h14V21zM7,10h5v5H7z" />
+            android:pathData="M406.459 450.771H365.303C357.726 450.771 351.584 456.914 351.584 464.49V501.359C351.584 508.936 357.726 515.078 365.303 515.078H406.459C414.036 515.078 420.178 508.936 420.178 501.359V464.49C420.178 456.914 414.036 450.771 406.459 450.771Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M511.922 450.771H470.766C463.189 450.771 457.047 456.914 457.047 464.49V501.359C457.047 508.936 463.189 515.078 470.766 515.078H511.922C519.499 515.078 525.641 508.936 525.641 501.359V464.49C525.641 456.914 519.499 450.771 511.922 450.771Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M406.459 558.807H365.303C357.726 558.807 351.584 564.949 351.584 572.525V609.395C351.584 616.971 357.726 623.113 365.303 623.113H406.459C414.036 623.113 420.178 616.971 420.178 609.395V572.525C420.178 564.949 414.036 558.807 406.459 558.807Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M511.922 558.807H470.766C463.189 558.807 457.047 564.949 457.047 572.525V609.395C457.047 616.971 463.189 623.113 470.766 623.113H511.922C519.499 623.113 525.641 616.971 525.641 609.395V572.525C525.641 564.949 519.499 558.807 511.922 558.807Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M620.814 558.807H579.658C572.082 558.807 565.939 564.949 565.939 572.525V609.395C565.939 616.971 572.082 623.113 579.658 623.113H620.814C628.391 623.113 634.533 616.971 634.533 609.395V572.525C634.533 564.949 628.391 558.807 620.814 558.807Z" />
+        <!-- Pin de ubicacion (teardrop) -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M624.244 275C698.84 275 752 330.732 752 400.184C752 485.926 661.113 557.949 624.244 601.678C587.375 557.949 496.488 485.926 496.488 400.184C496.488 330.732 549.648 275 624.244 275Z" />
+        <!-- Circulo interior del pin (color del fondo) -->
+        <path
+            android:fillColor="#FF5D007F"
+            android:pathData="M624.244 469.635C664.495 469.635 697.125 437.005 697.125 396.754C697.125 356.503 664.495 323.873 624.244 323.873C583.993 323.873 551.363 356.503 551.363 396.754C551.363 437.005 583.993 469.635 624.244 469.635Z" />
+        <!-- Estrella/destello dentro del pin -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M624.244 356.455L632.45 375.233L651.527 367.756L644.051 386.834L662.828 395.039L644.051 403.245L651.527 422.322L632.45 414.846L624.244 433.623L616.039 414.846L596.961 422.322L604.438 403.245L585.66 395.039L604.438 386.834L596.961 367.756L616.039 375.233L624.244 356.455Z" />
+        <!-- Arcos decorativos -->
+        <path
+            android:strokeColor="#FFFFFFFF"
+            android:strokeAlpha="0.34"
+            android:strokeWidth="9"
+            android:strokeLineCap="round"
+            android:pathData="M517.066 364.172C541.932 305.867 607.953 275.857 672.26 296.436" />
+        <path
+            android:strokeColor="#FFFFFFFF"
+            android:strokeAlpha="0.35"
+            android:strokeWidth="10"
+            android:strokeLineCap="round"
+            android:pathData="M332.721 403.613H469.908" />
     </group>
 </vector>
