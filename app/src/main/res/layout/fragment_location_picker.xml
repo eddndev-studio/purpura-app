@@ -12,20 +12,41 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Pista superior -->
+    <!-- Barra de busqueda (pill). Lanza el autocompletado de Places; se oculta si Places no esta
+         disponible (key vacia o Places API no habilitada) -> queda el tap-para-marcar. -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/searchBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:layout_margin="12dp"
-        app:cardCornerRadius="16dp">
+        android:clickable="true"
+        android:focusable="true"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="4dp">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:text="@string/location_picker_hint"
-            android:textAppearance="?attr/textAppearanceBodyMedium" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="14dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@null"
+                android:src="@android:drawable/ic_menu_search"
+                app:tint="?attr/colorPrimary" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:text="@string/location_search_hint"
+                android:textAppearance="?attr/textAppearanceBodyMedium" />
+        </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Confirmar (oculto hasta colocar el marcador) -->

@@ -177,6 +177,8 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.maps)
+    // Busqueda de lugares (Places SDK, Autocomplete New) para el selector de ubicacion (REQ-ADD-005).
+    implementation(libs.places)
 
     // Respaldo/Restauracion programatica en Google Drive (REQ-BACKUP, API de Drive). El SDK arrastra
     // httpcomponents/guava-jdk5 (legacy, en conflicto con el resto) -> se excluyen; usamos el transporte
