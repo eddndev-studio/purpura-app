@@ -83,5 +83,5 @@
     <color name="purpura_disabled_container">#1F1D1A20</color>
 
     <!-- Fondo del icono adaptativo -->
-    <color name="ic_launcher_background">#6A1B9A</color>
+    <color name="ic_launcher_background">#5D007F</color>
 </resources>
