@@ -81,6 +81,8 @@
     <string name="auth_or">o</string>
     <string name="auth_google">Continuar con Google</string>
     <string name="auth_error_empty_fields">Completa todos los campos.</string>
+    <string name="auth_show_password">Mostrar contraseña</string>
+    <string name="auth_hide_password">Ocultar contraseña</string>
     <string name="auth_google_cancelled">No se completó el inicio de sesión con Google.</string>
 
     <!-- Inicio: lista de próximos eventos (REQ-HOME-001) -->

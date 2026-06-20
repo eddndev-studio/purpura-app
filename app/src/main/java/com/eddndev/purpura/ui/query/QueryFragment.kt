@@ -5,214 +5,93 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.isVisible
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.eddndev.purpura.R
-import com.eddndev.purpura.databinding.FragmentQueryBinding
 import com.eddndev.purpura.domain.model.Event
-import com.eddndev.purpura.domain.model.EventStatus
-import com.eddndev.purpura.domain.model.EventType
 import com.eddndev.purpura.domain.model.QueryMode
-import com.eddndev.purpura.ui.common.EventListAdapter
 import com.eddndev.purpura.ui.common.navigateToEventDetail
+import com.eddndev.purpura.ui.compose.purpuraComposeView
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
-// Consultar (REQ-QUERY-001..006). Filtros por periodo/tipo/estatus que aplican al cambiar; el
-// modo Dia/Rango abre un selector de fecha. La lista reusa EventListAdapter, pagina al hacer
-// scroll y navega al Detalle al tocar una tarjeta.
-//
-// Alcance v1: modos Todos/Dia/Rango. Mes/Ano se agregan en un commit posterior (EventQuery y el
-// caso de uso ya los soportan).
+// Consultar (REQ-QUERY-001..006). Migrada a Compose (QueryScreen): el Fragment solo monta la
+// pantalla, resuelve la navegacion al Detalle y CONSERVA los selectores de fecha (MaterialDatePicker
+// para Dia/Rango y MonthYearPicker para Mes/Ano), que Compose no implementa. Cuando QueryScreen
+// elige un modo temporal o toca el boton de fecha, invoca onPickDate(mode): aqui abrimos el selector
+// adecuado y, al elegir, llamamos a viewModel.search con el filtro completo. Cancelar sin fecha
+// vuelve a "Todos" (mismo criterio que la version XML). El estado vive en QueryViewModel.
 @AndroidEntryPoint
 class QueryFragment : Fragment() {
 
-    private var _binding: FragmentQueryBinding? = null
-    private val binding get() = _binding!!
     private val viewModel: QueryViewModel by viewModels()
 
-    private val adapter = EventListAdapter(onClick = ::onEventClick)
-
-    // Fechas elegidas por el usuario. El modo solo se considera activo si su(s) fecha(s) existen,
-    // de modo que filtrar por tipo/estatus nunca dispara una consulta temporal incompleta.
-    private var selectedDate: LocalDate? = null
-    private var selectedFrom: LocalDate? = null
-    private var selectedTo: LocalDate? = null
-    // Mes/Ano (REQ-QUERY-005..006): el modo Mes usa ambos; el modo Ano solo el ano.
-    private var selectedYear: Int? = null
-    private var selectedMonth: Int? = null
-
-    // Dialogo de Mes/Ano abierto: no es un DialogFragment, asi que lo descartamos en onDestroyView
-    // para no filtrar la ventana al rotar (ese dismiss programatico no dispara onCancel, ver picker).
+    // Dialogo de Mes/Ano abierto (no es un DialogFragment): lo descartamos en onDestroyView para no
+    // filtrar la ventana al rotar. Ese dismiss programatico no dispara onCancel (ver MonthYearPicker).
     private var periodDialog: AlertDialog? = null
-
-    // Suprime la reaccion a cambios de chip cuando NO los origina el usuario: al revertir un chip
-    // por codigo (cancelar el selector) y durante la restauracion de la vista (rotacion / muerte de
-    // proceso), donde el framework re-marca los chips y dispararia busquedas/selectores espurios.
-    private var suppressChipEvents = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentQueryBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View = purpuraComposeView {
+        val state by viewModel.uiState.collectAsStateWithLifecycle()
+        QueryScreen(
+            state = state,
+            onSearch = viewModel::search,
+            onLoadMore = viewModel::loadMore,
+            onPickDate = ::openDatePickerForMode,
+            onEventClick = ::onEventClick,
+            onErrorShown = viewModel::errorShown,
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Suprimido hasta que termine la restauracion de la vista (onViewStateRestored): los chips
-        // se re-marcan ahi y no deben disparar busqueda ni abrir el selector.
-        suppressChipEvents = true
-
-        binding.resultsRecycler.adapter = adapter
-        setupPaging()
-
-        binding.modeChipGroup.setOnCheckedStateChangeListener { _, _ ->
-            if (!suppressChipEvents) onModeChanged()
-        }
-        binding.typeChipGroup.setOnCheckedStateChangeListener { _, _ ->
-            if (!suppressChipEvents) applyFilters()
-        }
-        binding.statusChipGroup.setOnCheckedStateChangeListener { _, _ ->
-            if (!suppressChipEvents) applyFilters()
-        }
-        binding.dateButton.setOnClickListener { openDatePickerForMode() }
-
-        observeState()
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        // Tras restaurar la vista: descarta un selector huerfano (sus listeners no sobreviven a la
-        // recreacion) y re-sincroniza el sub-estado de fecha desde el VM, que es la fuente de verdad
-        // de los filtros (los chips se restauran solos, pero las fechas elegidas no). Recien aqui se
-        // habilitan de nuevo los eventos de chip.
+        // Tras una recreacion, un selector huerfano no conserva sus listeners: lo descartamos para
+        // que el usuario lo reabra desde el boton de fecha (ya re-sincronizado por el estado del VM).
         (parentFragmentManager.findFragmentByTag(PICKER_TAG) as? DialogFragment)?.dismiss()
-        restoreDateUiFromFilters()
-        suppressChipEvents = false
     }
 
-    // Reconstruye selectedDate/from/to y el boton de fecha a partir de los filtros que conserva el
-    // VM y del chip de modo ya restaurado. Si el modo quedo activo sin fecha (rotacion con el
-    // selector abierto), el boton muestra su texto por defecto para que el usuario lo reabra.
-    private fun restoreDateUiFromFilters() {
-        val filters = viewModel.uiState.value.filters
-        selectedDate = filters.date
-        selectedFrom = filters.from
-        selectedTo = filters.to
-        selectedYear = filters.year
-        selectedMonth = filters.month
-        when (binding.modeChipGroup.checkedChipId) {
-            R.id.chipModeDay -> {
-                binding.dateButton.isVisible = true
-                binding.dateButton.text = selectedDate?.let(dateLabelFormat::format)
-                    ?: getString(R.string.query_pick_day)
-            }
-            R.id.chipModeRange -> {
-                binding.dateButton.isVisible = true
-                binding.dateButton.text = if (selectedFrom != null && selectedTo != null) {
-                    getString(
-                        R.string.query_range_format,
-                        dateLabelFormat.format(selectedFrom),
-                        dateLabelFormat.format(selectedTo),
-                    )
-                } else {
-                    getString(R.string.query_pick_range)
-                }
-            }
-            R.id.chipModeMonth -> {
-                binding.dateButton.isVisible = true
-                val year = selectedYear
-                val month = selectedMonth
-                binding.dateButton.text = if (year != null && month != null) {
-                    MonthYearPicker.label(year, month)
-                } else {
-                    getString(R.string.query_pick_month)
-                }
-            }
-            R.id.chipModeYear -> {
-                binding.dateButton.isVisible = true
-                binding.dateButton.text = selectedYear?.toString() ?: getString(R.string.query_pick_year)
-            }
-            else -> binding.dateButton.isVisible = false
+    // Abre el selector segun el modo. La fuente de verdad de los filtros es el VM: de ahi sembramos
+    // las fechas previas y preservamos tipo/estatus al construir el filtro resultante.
+    private fun openDatePickerForMode(mode: QueryMode) {
+        when (mode) {
+            QueryMode.por_dia -> openSingleDatePicker()
+            QueryMode.por_rango -> openRangePicker()
+            QueryMode.por_mes -> openMonthPicker()
+            QueryMode.por_anio -> openYearPicker()
         }
     }
 
-    private fun onModeChanged() {
-        when (binding.modeChipGroup.checkedChipId) {
-            R.id.chipModeDay -> {
-                binding.dateButton.setText(R.string.query_pick_day)
-                binding.dateButton.isVisible = true
-                openSingleDatePicker()
-            }
-            R.id.chipModeRange -> {
-                binding.dateButton.setText(R.string.query_pick_range)
-                binding.dateButton.isVisible = true
-                openRangePicker()
-            }
-            R.id.chipModeMonth -> {
-                binding.dateButton.setText(R.string.query_pick_month)
-                binding.dateButton.isVisible = true
-                openMonthPicker()
-            }
-            R.id.chipModeYear -> {
-                binding.dateButton.setText(R.string.query_pick_year)
-                binding.dateButton.isVisible = true
-                openYearPicker()
-            }
-            else -> {
-                binding.dateButton.isVisible = false
-                clearDates()
-                applyFilters()
-            }
-        }
-    }
-
-    private fun openDatePickerForMode() {
-        when (binding.modeChipGroup.checkedChipId) {
-            R.id.chipModeDay -> openSingleDatePicker()
-            R.id.chipModeRange -> openRangePicker()
-            R.id.chipModeMonth -> openMonthPicker()
-            R.id.chipModeYear -> openYearPicker()
-        }
-    }
+    private fun currentFilters(): QueryFilters = viewModel.uiState.value.filters
 
     private fun openSingleDatePicker() {
+        val current = currentFilters()
         val picker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(R.string.query_date_picker_title)
-            .setSelection(selectedDate?.toUtcMillis() ?: MaterialDatePicker.todayInUtcMilliseconds())
+            .setSelection(current.date?.toUtcMillis() ?: MaterialDatePicker.todayInUtcMilliseconds())
             .build()
         picker.addOnPositiveButtonClickListener { millis ->
-            selectedDate = millis.toLocalDateUtc()
-            binding.dateButton.text = dateLabelFormat.format(selectedDate)
-            applyFilters()
+            val date = millis.toLocalDateUtc()
+            viewModel.search(currentFilters().copy(mode = QueryMode.por_dia, date = date, from = null, to = null, year = null, month = null))
         }
-        picker.addOnNegativeButtonClickListener { revertToAllIfNoDay() }
-        picker.addOnCancelListener { revertToAllIfNoDay() }
+        picker.addOnNegativeButtonClickListener { revertToAllIfNoMode(QueryMode.por_dia) }
+        picker.addOnCancelListener { revertToAllIfNoMode(QueryMode.por_dia) }
         picker.show(parentFragmentManager, PICKER_TAG)
     }
 
     private fun openRangePicker() {
-        val seed = if (selectedFrom != null && selectedTo != null) {
-            androidx.core.util.Pair(selectedFrom!!.toUtcMillis(), selectedTo!!.toUtcMillis())
+        val current = currentFilters()
+        val seed = if (current.from != null && current.to != null) {
+            androidx.core.util.Pair(current.from!!.toUtcMillis(), current.to!!.toUtcMillis())
         } else {
             null
         }
@@ -221,154 +100,69 @@ class QueryFragment : Fragment() {
             .apply { if (seed != null) setSelection(seed) }
             .build()
         picker.addOnPositiveButtonClickListener { range ->
-            selectedFrom = range.first?.toLocalDateUtc()
-            selectedTo = range.second?.toLocalDateUtc()
-            binding.dateButton.text = getString(
-                R.string.query_range_format,
-                selectedFrom?.let(dateLabelFormat::format).orEmpty(),
-                selectedTo?.let(dateLabelFormat::format).orEmpty(),
+            val from = range.first?.toLocalDateUtc()
+            val to = range.second?.toLocalDateUtc()
+            viewModel.search(
+                currentFilters().copy(
+                    mode = QueryMode.por_rango, from = from, to = to,
+                    date = null, year = null, month = null,
+                ),
             )
-            applyFilters()
         }
-        picker.addOnNegativeButtonClickListener { revertToAllIfNoRange() }
-        picker.addOnCancelListener { revertToAllIfNoRange() }
+        picker.addOnNegativeButtonClickListener { revertToAllIfNoMode(QueryMode.por_rango) }
+        picker.addOnCancelListener { revertToAllIfNoMode(QueryMode.por_rango) }
         picker.show(parentFragmentManager, PICKER_TAG)
     }
 
     private fun openMonthPicker() {
+        val current = currentFilters()
         val today = LocalDate.now()
         periodDialog = MonthYearPicker.showMonth(
             context = requireContext(),
-            initialYear = selectedYear ?: today.year,
-            initialMonth = selectedMonth ?: today.monthValue,
+            initialYear = current.year ?: today.year,
+            initialMonth = current.month ?: today.monthValue,
             onPicked = { year, month ->
-                selectedYear = year
-                selectedMonth = month
-                binding.dateButton.text = MonthYearPicker.label(year, month)
-                applyFilters()
+                viewModel.search(
+                    currentFilters().copy(
+                        mode = QueryMode.por_mes, year = year, month = month,
+                        date = null, from = null, to = null,
+                    ),
+                )
             },
-            onCancel = ::revertToAllIfNoMonth,
+            onCancel = { revertToAllIfNoMode(QueryMode.por_mes) },
         )
     }
 
     private fun openYearPicker() {
+        val current = currentFilters()
         val today = LocalDate.now()
         periodDialog = MonthYearPicker.showYear(
             context = requireContext(),
-            initialYear = selectedYear ?: today.year,
+            initialYear = current.year ?: today.year,
             onPicked = { year ->
-                selectedYear = year
-                selectedMonth = null
-                binding.dateButton.text = year.toString()
-                applyFilters()
+                viewModel.search(
+                    currentFilters().copy(
+                        mode = QueryMode.por_anio, year = year, month = null,
+                        date = null, from = null, to = null,
+                    ),
+                )
             },
-            onCancel = ::revertToAllIfNoYear,
+            onCancel = { revertToAllIfNoMode(QueryMode.por_anio) },
         )
     }
 
-    // Si el usuario abrio el selector pero no habia una fecha previa y cancelo, volvemos a Todos
-    // para no dejar el modo activo sin fecha.
-    private fun revertToAllIfNoDay() {
-        if (selectedDate == null) checkModeAll()
-    }
-
-    private fun revertToAllIfNoRange() {
-        if (selectedFrom == null || selectedTo == null) checkModeAll()
-    }
-
-    private fun revertToAllIfNoMonth() {
-        if (selectedYear == null || selectedMonth == null) checkModeAll()
-    }
-
-    private fun revertToAllIfNoYear() {
-        if (selectedYear == null) checkModeAll()
-    }
-
-    private fun checkModeAll() {
-        suppressChipEvents = true
-        binding.chipModeAll.isChecked = true
-        suppressChipEvents = false
-        binding.dateButton.isVisible = false
-        clearDates()
-        applyFilters()
-    }
-
-    private fun clearDates() {
-        selectedDate = null
-        selectedFrom = null
-        selectedTo = null
-        selectedYear = null
-        selectedMonth = null
-    }
-
-    private fun applyFilters() {
-        // El modo solo cuenta como activo si tiene su(s) fecha(s); si no, equivale a "Todos".
-        val mode = when (binding.modeChipGroup.checkedChipId) {
-            R.id.chipModeDay -> if (selectedDate != null) QueryMode.por_dia else null
-            R.id.chipModeRange -> if (selectedFrom != null && selectedTo != null) QueryMode.por_rango else null
-            R.id.chipModeMonth -> if (selectedYear != null && selectedMonth != null) QueryMode.por_mes else null
-            R.id.chipModeYear -> if (selectedYear != null) QueryMode.por_anio else null
-            else -> null
+    // Si el usuario abrio el selector pero no llego a fijar la(s) fecha(s) del modo, volvemos a
+    // "Todos" preservando tipo/estatus, para no quedar con un modo activo sin fecha.
+    private fun revertToAllIfNoMode(mode: QueryMode) {
+        val filters = currentFilters()
+        val complete = when (mode) {
+            QueryMode.por_dia -> filters.mode == QueryMode.por_dia && filters.date != null
+            QueryMode.por_rango -> filters.mode == QueryMode.por_rango && filters.from != null && filters.to != null
+            QueryMode.por_mes -> filters.mode == QueryMode.por_mes && filters.year != null && filters.month != null
+            QueryMode.por_anio -> filters.mode == QueryMode.por_anio && filters.year != null
         }
-        viewModel.search(
-            QueryFilters(
-                mode = mode,
-                type = selectedType(),
-                status = selectedStatus(),
-                date = selectedDate.takeIf { mode == QueryMode.por_dia },
-                from = selectedFrom.takeIf { mode == QueryMode.por_rango },
-                to = selectedTo.takeIf { mode == QueryMode.por_rango },
-                year = selectedYear.takeIf { mode == QueryMode.por_mes || mode == QueryMode.por_anio },
-                month = selectedMonth.takeIf { mode == QueryMode.por_mes },
-            ),
-        )
-    }
-
-    private fun selectedType(): EventType? = when (binding.typeChipGroup.checkedChipId) {
-        R.id.chipTypeCita -> EventType.cita
-        R.id.chipTypeJunta -> EventType.junta
-        R.id.chipTypeEntrega -> EventType.entrega_proyecto
-        R.id.chipTypeExamen -> EventType.examen
-        R.id.chipTypeOtros -> EventType.otros
-        else -> null
-    }
-
-    private fun selectedStatus(): EventStatus? = when (binding.statusChipGroup.checkedChipId) {
-        R.id.chipStatusPendiente -> EventStatus.pendiente
-        R.id.chipStatusRealizado -> EventStatus.realizado
-        R.id.chipStatusAplazado -> EventStatus.aplazado
-        else -> null
-    }
-
-    private fun setupPaging() {
-        binding.resultsRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (dy <= 0) return
-                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                val lastVisible = layoutManager.findLastVisibleItemPosition()
-                if (lastVisible >= layoutManager.itemCount - PAGING_THRESHOLD) {
-                    viewModel.loadMore()
-                }
-            }
-        })
-    }
-
-    private fun observeState() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect(::render)
-            }
-        }
-    }
-
-    private fun render(state: QueryUiState) {
-        adapter.submitList(state.events)
-        binding.progressBar.isVisible = state.isLoading && state.events.isEmpty()
-        binding.pagingProgress.isVisible = state.isPaging
-        binding.emptyGroup.isVisible = state.isEmpty
-        state.errorRes?.let { messageRes ->
-            Snackbar.make(binding.root, messageRes, Snackbar.LENGTH_LONG).show()
-            viewModel.errorShown()
+        if (!complete) {
+            viewModel.search(QueryFilters(type = filters.type, status = filters.status))
         }
     }
 
@@ -380,8 +174,6 @@ class QueryFragment : Fragment() {
         super.onDestroyView()
         periodDialog?.dismiss()
         periodDialog = null
-        binding.resultsRecycler.adapter = null
-        _binding = null
     }
 
     // MaterialDatePicker opera en UTC (medianoche): convertimos a/desde LocalDate con UTC.
@@ -392,8 +184,6 @@ class QueryFragment : Fragment() {
         atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 
     private companion object {
-        const val PAGING_THRESHOLD = 3
         const val PICKER_TAG = "query_date_picker"
-        val dateLabelFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale("es", "MX"))
     }
 }
