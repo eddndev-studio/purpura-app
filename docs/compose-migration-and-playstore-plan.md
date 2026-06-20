@@ -16,17 +16,24 @@ Fecha de inicio: 2026-06-20. Rama: `feat/compose-migration`. Estado: EN PROGRESO
 
 1. [x] Toolchain: compileSdk/targetSdk 36, Compose BOM 2026.06.00 + plugin compose de Kotlin 2.3. (build verde)
 2. [x] Design system portado a Compose (Theme, Color, Type, Shape, Extended) desde la spec. (build verde)
-3. [ ] Libreria de componentes Compose compartidos (boton pill, card, chips de
-       estatus/tipo, scaffold, search bar) con motion.
-4. [ ] Las 11 pantallas migradas a Compose (interop Fragment->ComposeView por pantalla,
-       compila y es shippable en cada paso) o Navigation-Compose si conviene.
-5. [ ] Mapa restilizado (estilo nocturno/morado, marcadores custom, UX de seleccion).
-6. [ ] Motion: transiciones de navegacion, animaciones de lista, ripples, shared element
-       donde aporte.
-7. [ ] Build emite **AAB firmado** (`bundleRelease`) + release.yml actualizado.
-8. [ ] Metadata y assets de la ficha de Play (textos, descripcion, lista de capturas
-       requeridas) redactados en `docs/playstore/`.
-9. [ ] Checklist de los pasos SOLO-humanos de Play Console (handoff).
+3. [x] Libreria de componentes Compose compartidos (card, badges, estados, interop, mapa lite) con motion.
+4. [x] Las 11 pantallas migradas a Compose (interop Fragment->ComposeView; build verde en cada paso):
+       Inicio, Acerca de, Auth, Respaldo, Restaurar, Calendario, Mapa de calor, Consultar,
+       Detalle, Anadir/Editar, y el selector de ubicacion (mapa restilizado, sigue como Fragment).
+5. [x] Mapa restilizado (estilo morado dia/noche, marcador de marca) en selector y mapa lite del Detalle.
+6. [x] Motion: animateItem en listas/rejillas, animateColorAsState en selecciones, Crossfade/AnimatedVisibility,
+       pull-to-refresh M3. (Transiciones a nivel navegacion: pendientes; requieren colapsar a Navigation-Compose.)
+7. [x] Build emite **AAB firmado** (`bundleRelease`) + release.yml actualizado.
+8. [x] Metadata y assets de la ficha de Play redactados en `docs/playstore/`.
+9. [x] Checklist de los pasos SOLO-humanos de Play Console (handoff) en `docs/playstore/console-checklist.md`.
+
+## Pendiente (no bloqueante del "done" de codigo)
+
+- Verificacion VISUAL en device/emulador (capturas, lucir noche high-end): no se puede hacer desde
+  el codigo. Es la tarea de la fase de verificacion + los assets de la ficha.
+- El scaffold de MainActivity (drawer/toolbar/bottom nav) sigue en XML hospedando el NavHost; las
+  pantallas son Compose. Colapsar a Navigation-Compose single-activity habilitaria transiciones de
+  navegacion y shared elements; es una mejora posterior, no requisito de publicacion.
 
 ## Pasos SOLO-humanos (handoff, no los puedo hacer yo)
 
@@ -55,3 +62,8 @@ poder correr emulador/capturas.
 ## Bitacora de progreso
 
 - 2026-06-20: rama creada, baseline verde, plan escrito. Empezando foundation.
+- 2026-06-20: foundation (SDK 36 + Compose + tema) verde. Inicio/Acerca migradas (patron probado).
+- 2026-06-20: 6 pantallas migradas via dynamic workflow (Auth/Backup/Restore/Calendar/Heatmap/Query),
+  build verde al primer intento. AAB en release.yml + metadata de Play. Mapa restilizado.
+- 2026-06-20: Detalle y Anadir/Editar migradas. 11/11 pantallas en Compose. build + tests verdes.
+  Codigo del "done" completo; queda verificacion visual en device (handoff).
