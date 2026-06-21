@@ -5,6 +5,8 @@
     <!-- Acciones genericas reutilizables (dialogos) -->
     <string name="action_accept">Aceptar</string>
     <string name="action_cancel">Cancelar</string>
+    <string name="action_back">Volver</string>
+    <string name="map_open_external">Abrir en Maps</string>
 
     <!-- Navigation drawer (7 opciones, REQ-NAV-001) -->
     <string name="nav_add_event">Añadir Eventos</string>
@@ -16,9 +18,11 @@
     <string name="nav_about">Acerca de</string>
     <string name="nav_exit">Salir</string>
 
-    <!-- Bottom navigation (3 opciones, REQ-NAV-002) -->
+    <!-- Bottom navigation: 4 destinos de nivel superior (Inicio, Calendario, Consultar, Cuenta) -->
     <string name="menu_inicio">Inicio</string>
+    <string name="menu_calendario">Calendario</string>
     <string name="menu_consultar">Consultar</string>
+    <string name="menu_cuenta">Cuenta</string>
     <string name="menu_salir">Salir</string>
 
     <!-- Drawer header -->
@@ -38,10 +42,25 @@
     <string name="title_about">Acerca de</string>
     <string name="title_detail">Detalle del evento</string>
     <string name="title_auth">Bienvenido a Purpura</string>
+    <string name="title_account">Cuenta</string>
+
+    <!-- Cuenta: hub de sesion, datos y aplicacion -->
+    <string name="account_section_data">Datos</string>
+    <string name="account_section_app">Aplicación</string>
+    <string name="account_backup">Respaldo</string>
+    <string name="account_backup_desc">Guarda tus eventos en Google Drive o un archivo</string>
+    <string name="account_restore">Restaurar</string>
+    <string name="account_restore_desc">Recupera tus eventos desde un respaldo</string>
+    <string name="account_about">Acerca de</string>
+    <string name="account_about_desc">Información de la app y créditos</string>
+    <string name="account_version">Versión %1$s</string>
+    <string name="account_default_name">Tu cuenta</string>
+    <string name="account_logout">Cerrar sesión</string>
 
     <!-- Placeholders del esqueleto (se reemplazan al implementar features) -->
     <string name="placeholder_home">Aquí aparecerán tus eventos de hoy y los próximos 4 días.</string>
     <string name="home_empty_title">No tienes eventos próximos</string>
+    <string name="home_section_upcoming">Próximos 5 días</string>
     <string name="fab_add_event">Añadir Eventos</string>
     <string name="placeholder_icon_desc">Ilustración de la pantalla</string>
     <string name="placeholder_add_event">Formulario para crear un evento (tipo, contacto, ubicación, fecha, hora, estatus, recordatorio).</string>
@@ -81,6 +100,7 @@
     <string name="auth_or">o</string>
     <string name="auth_google">Continuar con Google</string>
     <string name="auth_error_empty_fields">Completa todos los campos.</string>
+    <string name="auth_error_invalid_email">Ingresa un correo válido.</string>
     <string name="auth_show_password">Mostrar contraseña</string>
     <string name="auth_hide_password">Ocultar contraseña</string>
     <string name="auth_google_cancelled">No se completó el inicio de sesión con Google.</string>
@@ -137,6 +157,7 @@
     <string name="query_results_desc">Resultados de la consulta</string>
     <string name="query_empty_title">Sin resultados</string>
     <string name="query_empty_body">Ajusta los filtros e intenta de nuevo.</string>
+    <string name="query_start_title">Empieza tu consulta</string>
 
     <!-- Detalle y edicion de un evento (REQ-QUERY-007..013) -->
     <string name="detail_contact_label">Contacto</string>
@@ -158,6 +179,10 @@
     <string name="calendar_next_month">Mes siguiente</string>
     <string name="calendar_grid_desc">Calendario del mes</string>
     <string name="calendar_day_empty">Sin eventos este día.</string>
+    <string name="calendar_day_empty_title">Sin eventos</string>
+    <!-- Toggle segmentado Mes/Calor (compartido por Calendario y Mapa de calor) -->
+    <string name="calendar_view_month">Mes</string>
+    <string name="calendar_view_heat">Calor</string>
 
     <!-- Mapa de calor mensual (densidad de eventos por dia) -->
     <string name="heatmap_grid_desc">Mapa de calor del mes</string>
@@ -215,6 +240,7 @@
     <string name="add_event_reminder_label">Recordatorio</string>
     <string name="add_event_date_label">Fecha</string>
     <string name="add_event_time_label">Hora</string>
+    <string name="add_event_datetime_label">Fecha y hora</string>
     <string name="add_event_pick_date">Elegir fecha</string>
     <string name="add_event_pick_time">Elegir hora</string>
     <string name="add_event_date_picker_title">Selecciona la fecha</string>
