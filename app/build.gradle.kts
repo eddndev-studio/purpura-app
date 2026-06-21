@@ -215,4 +215,11 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+
+    // Pruebas instrumentadas de Compose: smoke test que renderiza cada pantalla migrada con un
+    // estado de ejemplo y verifica que compone sin crashear en un device/emulador real.
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
 }

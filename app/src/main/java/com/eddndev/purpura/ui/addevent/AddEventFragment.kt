@@ -27,7 +27,8 @@ import com.eddndev.purpura.ui.compose.purpuraComposeView
 import com.eddndev.purpura.ui.location.LocationPickerFragment
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 // Anadir / Editar Evento (REQ-ADD-001..009). Migrado a Compose (AddEventScreen): la pantalla posee el
 // estado del formulario y los pickers de fecha/hora; el Fragment conserva los selectores externos
@@ -40,9 +41,12 @@ class AddEventFragment : Fragment() {
     private val editEventId: String? get() = arguments?.getString(ARG_EVENT_ID)?.takeIf { it.isNotBlank() }
     private val isEditMode get() = editEventId != null
 
-    // Canal de resultados de selectores externos hacia la pantalla Compose. extraBufferCapacity=1
-    // permite emitir desde callbacks no-suspend (tryEmit) sin perder el ultimo pick.
-    private val externalPicks = MutableSharedFlow<ExternalPick>(extraBufferCapacity = 1)
+    // Canal de resultados de selectores externos hacia la pantalla Compose. Un Channel BUFFERED (no un
+    // SharedFlow replay=0) garantiza entrega exactly-once aunque haya un hueco entre el emit y la
+    // (re)suscripcion del colector: al volver del selector de mapa la vista de este Fragment se
+    // recrea y arranca un colector nuevo; el valor espera en el canal hasta que ese colector lo drena
+    // (REQ-ADD-005: el pick de ubicacion no se puede perder).
+    private val externalPicks = Channel<ExternalPick>(Channel.BUFFERED)
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* ignorado */ }
@@ -69,7 +73,7 @@ class AddEventFragment : Fragment() {
         val state by viewModel.uiState.collectAsStateWithLifecycle()
         AddEventScreen(
             state = state,
-            externalPicks = externalPicks,
+            externalPicks = externalPicks.receiveAsFlow(),
             onPickContact = ::ensureContactsPermissionThenPick,
             onPickLocation = ::openLocationPicker,
             onSubmit = ::submit,
@@ -85,7 +89,7 @@ class AddEventFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         // El selector de mapa devuelve lat/lng (+ etiqueta) por Fragment Result.
         setFragmentResultListener(LocationPickerFragment.REQUEST_KEY) { _, bundle ->
-            externalPicks.tryEmit(
+            externalPicks.trySend(
                 ExternalPick.Location(
                     lat = bundle.getDouble(LocationPickerFragment.RESULT_LAT),
                     lng = bundle.getDouble(LocationPickerFragment.RESULT_LNG),
@@ -139,7 +143,7 @@ class AddEventFragment : Fragment() {
             view?.let { Snackbar.make(it, R.string.add_event_contact_read_failed, Snackbar.LENGTH_LONG).show() }
             return
         }
-        externalPicks.tryEmit(ExternalPick.Contact(picked.name, picked.ref))
+        externalPicks.trySend(ExternalPick.Contact(picked.name, picked.ref))
     }
 
     private fun requestNotificationPermissionIfNeeded() {
