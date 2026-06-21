@@ -29,8 +29,11 @@ Fecha de inicio: 2026-06-20. Rama: `feat/compose-migration`. Estado: EN PROGRESO
 
 ## Pendiente (no bloqueante del "done" de codigo)
 
-- Verificacion VISUAL en device/emulador (capturas, lucir noche high-end): no se puede hacer desde
-  el codigo. Es la tarea de la fase de verificacion + los assets de la ficha.
+- Verificacion RUNTIME/VISUAL en device/emulador. Se escribio `app/src/androidTest/.../ScreenSmokeTest.kt`
+  (monta las 10 pantallas con estado de ejemplo y verifica que componen sin crashear; cubre el riesgo
+  de scroll anidado en los grids). COMPILA y construye el test APK, pero NO se pudo EJECUTAR aqui: el
+  emulador headless no llego a boot_completed en este entorno (3 intentos). Correr en una maquina con
+  emulador/device:  `./gradlew :app:connectedDebugAndroidTest`. Luego QA visual + capturas para la ficha.
 - El scaffold de MainActivity (drawer/toolbar/bottom nav) sigue en XML hospedando el NavHost; las
   pantallas son Compose. Colapsar a Navigation-Compose single-activity habilitaria transiciones de
   navegacion y shared elements; es una mejora posterior, no requisito de publicacion.
