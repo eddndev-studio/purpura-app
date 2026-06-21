@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.eddndev.purpura.BuildConfig
 import com.eddndev.purpura.ui.compose.purpuraComposeView
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,6 +25,7 @@ class AboutFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View = purpuraComposeView {
         AboutScreen(
+            versionName = BuildConfig.VERSION_NAME,
             onBack = { findNavController().navigateUp() },
             onLogout = viewModel::logout,
         )
