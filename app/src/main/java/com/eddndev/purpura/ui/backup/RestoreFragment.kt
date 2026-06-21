@@ -5,24 +5,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.isVisible
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.eddndev.purpura.R
-import com.eddndev.purpura.databinding.FragmentRestoreBinding
-import com.eddndev.purpura.domain.backup.ImportResult
 import com.eddndev.purpura.domain.repository.CloudBackup
 import com.eddndev.purpura.ui.common.DriveAuth
+import com.eddndev.purpura.ui.compose.purpuraComposeView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-// Restaurar (REQ-BACKUP-002). Dos caminos:
+// Restaurar (REQ-BACKUP-002). Migrada a Compose (RestoreScreen): el Fragment monta la pantalla y
+// conserva la plomeria. Dos caminos:
 //  - Google Drive (API): el Fragment asegura la autorizacion, el VM lista los respaldos de Drive y el
 //    usuario elige cual restaurar en un dialogo; el VM descarga e importa.
 //  - Archivo: el Fragment abre OpenDocument (filtrado a JSON) y le pasa al VM un abridor de
@@ -30,10 +32,9 @@ import java.io.IOException
 @AndroidEntryPoint
 class RestoreFragment : Fragment() {
 
-    private var _binding: FragmentRestoreBinding? = null
-    private val binding get() = _binding!!
     private val viewModel: RestoreViewModel by viewModels()
 
+    // Accion a ejecutar tras conceder el permiso de Drive (listar respaldos). Null fuera del flujo.
     private var pendingDriveAction: (() -> Unit)? = null
 
     private val driveAuthLauncher = registerForActivityResult(
@@ -44,7 +45,7 @@ class RestoreFragment : Fragment() {
         if (action != null && DriveAuth.isAuthorized(requireContext())) {
             action()
         } else {
-            Snackbar.make(binding.root, R.string.restore_drive_auth_needed, Snackbar.LENGTH_LONG).show()
+            view?.let { Snackbar.make(it, R.string.restore_drive_auth_needed, Snackbar.LENGTH_LONG).show() }
         }
     }
 
@@ -58,6 +59,8 @@ class RestoreFragment : Fragment() {
         }
     }
 
+    // Asegura la autorizacion de Drive antes de [action]: si ya hay permiso la ejecuta, si no lanza el
+    // consentimiento de Google y la encola para correrla al volver.
     private fun ensureDriveAuthThen(action: () -> Unit) {
         if (DriveAuth.isAuthorized(requireContext())) {
             action()
@@ -71,48 +74,42 @@ class RestoreFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentRestoreBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View = purpuraComposeView {
+        val state by viewModel.uiState.collectAsStateWithLifecycle()
+        RestoreScreen(
+            state = state,
+            onBack = { findNavController().navigateUp() },
+            onRestoreFromDrive = { ensureDriveAuthThen { viewModel.loadDriveBackups() } },
+            onRestoreFromFile = { openDocument.launch(arrayOf(MIME_JSON)) },
+            onResultShown = viewModel::resultShown,
+            onErrorShown = viewModel::errorShown,
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.restoreDriveButton.setOnClickListener { ensureDriveAuthThen { viewModel.loadDriveBackups() } }
-        binding.restoreFileButton.setOnClickListener { openDocument.launch(arrayOf(MIME_JSON)) }
-        observeState()
+        observeDriveBackups()
     }
 
-    private fun observeState() {
+    // El dialogo de seleccion de respaldos de Drive se queda en la vista clasica (MaterialAlertDialog):
+    // observa driveBackups, abre el picker (o avisa si esta vacio) y consume la lista para no reabrirlo
+    // al rotar. El resto de avisos (resumen/errores) los muestra RestoreScreen via snackbar.
+    private fun observeDriveBackups() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect(::render)
+                viewModel.uiState.collect { state ->
+                    state.driveBackups?.let { backups ->
+                        viewModel.driveBackupsShown()
+                        if (backups.isEmpty()) {
+                            view?.let {
+                                Snackbar.make(it, R.string.restore_drive_empty, Snackbar.LENGTH_LONG).show()
+                            }
+                        } else {
+                            showDrivePicker(backups)
+                        }
+                    }
+                }
             }
-        }
-    }
-
-    private fun render(state: RestoreUiState) {
-        binding.restoreDriveButton.isEnabled = !state.isWorking
-        binding.restoreFileButton.isEnabled = !state.isWorking
-        binding.restoreProgress.isVisible = state.isWorking
-
-        // Lista de respaldos de Drive lista: abre el dialogo de seleccion (o avisa si esta vacia) y la
-        // consume para no reabrirlo al rotar.
-        state.driveBackups?.let { backups ->
-            viewModel.driveBackupsShown()
-            if (backups.isEmpty()) {
-                Snackbar.make(binding.root, R.string.restore_drive_empty, Snackbar.LENGTH_LONG).show()
-            } else {
-                showDrivePicker(backups)
-            }
-        }
-        state.result?.let { result ->
-            Snackbar.make(binding.root, summaryOf(result), Snackbar.LENGTH_LONG).show()
-            viewModel.resultShown()
-        }
-        state.errorRes?.let { messageRes ->
-            Snackbar.make(binding.root, messageRes, Snackbar.LENGTH_LONG).show()
-            viewModel.errorShown()
         }
     }
 
@@ -124,19 +121,6 @@ class RestoreFragment : Fragment() {
             .setItems(names) { _, which -> viewModel.restoreFromDrive(backups[which].id) }
             .setNegativeButton(R.string.detail_delete_cancel, null)
             .show()
-    }
-
-    private fun summaryOf(result: ImportResult): String = getString(
-        R.string.restore_result_summary,
-        result.imported,
-        result.updated,
-        result.skipped,
-        result.failed,
-    )
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private companion object {

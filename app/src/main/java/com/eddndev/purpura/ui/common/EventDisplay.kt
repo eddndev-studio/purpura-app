@@ -26,6 +26,7 @@ object EventDisplay {
     private val DAY_NUMBER = DateTimeFormatter.ofPattern("dd", LOCALE)
     private val MONTH_ABBREV = DateTimeFormatter.ofPattern("MMM", LOCALE)
     private val FULL_DATE = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM yyyy", LOCALE)
+    private val TODAY = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM", LOCALE)
     private val MONTH_YEAR = DateTimeFormatter.ofPattern("MMMM yyyy", LOCALE)
 
     @StringRes
@@ -98,6 +99,10 @@ object EventDisplay {
     // "15:30" en la zona del dispositivo.
     fun formatTime(startsAt: Instant): String =
         startsAt.atZone(ZoneId.systemDefault()).format(TIME)
+
+    // "Viernes 20 de junio" (sin anio): subtitulo de bienvenida en Inicio.
+    fun formatToday(): String =
+        LocalDate.now(ZoneId.systemDefault()).format(TODAY).replaceFirstChar { it.titlecase(LOCALE) }
 
     // Tesela de fecha de la tarjeta: "30" (dia con cero) y "JUN" (mes abreviado en mayusculas).
     fun formatDayNumber(startsAt: Instant): String =

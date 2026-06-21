@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Bottom navigation: 4 destinos de nivel superior. Los ids COINCIDEN con los del nav_graph para
+     que BottomNavigationView.setupWithNavController maneje navegacion, seleccion y back stack. -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menu_inicio"
+        android:id="@id/homeFragment"
         android:icon="@drawable/ic_home"
         android:title="@string/menu_inicio" />
     <item
-        android:id="@+id/menu_consultar"
+        android:id="@id/calendarFragment"
+        android:icon="@drawable/ic_calendar_month"
+        android:title="@string/menu_calendario" />
+    <item
+        android:id="@id/queryFragment"
         android:icon="@drawable/ic_search"
         android:title="@string/menu_consultar" />
     <item
-        android:id="@+id/menu_salir"
-        android:icon="@drawable/ic_logout"
-        android:title="@string/menu_salir" />
+        android:id="@id/accountFragment"
+        android:icon="@drawable/ic_person"
+        android:title="@string/menu_cuenta" />
 </menu>

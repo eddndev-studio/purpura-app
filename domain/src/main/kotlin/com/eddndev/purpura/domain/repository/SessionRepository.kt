@@ -11,4 +11,8 @@ interface SessionRepository {
     suspend fun persist(result: AuthResult)
     suspend fun currentToken(): String?   // lo consume el AuthInterceptor
     suspend fun clear()                   // cierre de sesion: borra token y cache
+    // Invalidacion SINCRONA por token expirado/invalido (401 en endpoint protegido). Borra el token
+    // y emite sesion null para que el gate de navegacion lleve a Auth. La llama el AuthInterceptor
+    // desde el hilo de OkHttp, por eso no es suspend ni toca Room (solo estado de sesion + token).
+    fun invalidate()
 }

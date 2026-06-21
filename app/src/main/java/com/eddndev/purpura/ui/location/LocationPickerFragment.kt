@@ -17,11 +17,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.eddndev.purpura.R
 import com.eddndev.purpura.databinding.FragmentLocationPickerBinding
+import com.eddndev.purpura.ui.common.MapStyling
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.Place
@@ -93,9 +93,11 @@ class LocationPickerFragment : Fragment() {
     private fun onMapReady(map: GoogleMap) {
         val binding = _binding ?: return
         googleMap = map
+        // Estilo de marca (oculta POIs, tine el mapa, dia/noche): quita el look de Maps crudo.
+        MapStyling.apply(requireContext(), map)
         val current = selected
         if (current != null) {
-            map.addMarker(MarkerOptions().position(current))
+            map.addMarker(MapStyling.markerOptions(current))
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(current, MARKER_ZOOM))
             binding.confirmButton.isVisible = true
         } else {
@@ -158,7 +160,7 @@ class LocationPickerFragment : Fragment() {
         selected = latLng
         selectedLabel = label
         map.clear()
-        map.addMarker(MarkerOptions().position(latLng))
+        map.addMarker(MapStyling.markerOptions(latLng))
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, MARKER_ZOOM))
         binding.confirmButton.isVisible = true
     }
@@ -169,7 +171,7 @@ class LocationPickerFragment : Fragment() {
         selected = latLng
         selectedLabel = null // tap manual: volver a geocodificar al confirmar
         map.clear()
-        map.addMarker(MarkerOptions().position(latLng))
+        map.addMarker(MapStyling.markerOptions(latLng))
         binding.confirmButton.isVisible = true
     }
 

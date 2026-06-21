@@ -188,4 +188,8 @@ class FakeSessionRepository : SessionRepository {
         clearCount++
         sessionFlow.value = null
     }
+
+    override fun invalidate() {
+        sessionFlow.value = null
+    }
 }

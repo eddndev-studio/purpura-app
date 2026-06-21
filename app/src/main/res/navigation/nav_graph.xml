@@ -61,6 +61,12 @@
         tools:layout="@layout/fragment_about" />
 
     <fragment
+        android:id="@+id/accountFragment"
+        android:name="com.eddndev.purpura.ui.account.AccountFragment"
+        android:label="@string/title_account"
+        tools:layout="@layout/fragment_placeholder" />
+
+    <fragment
         android:id="@+id/eventDetailFragment"
         android:name="com.eddndev.purpura.ui.detail.EventDetailFragment"
         android:label="@string/title_detail"

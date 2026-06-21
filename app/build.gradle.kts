@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
@@ -46,12 +47,12 @@ val appVersionCode: Int = System.getenv("APP_VERSION_CODE")?.toIntOrNull()
 
 android {
     namespace = "com.eddndev.purpura"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.eddndev.purpura"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = appVersionCode
         versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -115,6 +116,9 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        // Compose habilitado junto a Views: la migracion es incremental (interop ComposeView por
+        // pantalla), asi que ambos coexisten hasta retirar el ultimo layout XML.
+        compose = true
     }
 
     // El SDK de Drive (google-http-client y transitivas) trae metadatos en META-INF que chocan al
@@ -157,6 +161,22 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.lifecycle.runtime)
 
+    // Jetpack Compose (BOM alinea versiones). Coexiste con Views durante la migracion incremental.
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
@@ -195,4 +215,11 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+
+    // Pruebas instrumentadas de Compose: smoke test que renderiza cada pantalla migrada con un
+    // estado de ejemplo y verifica que compone sin crashear en un device/emulador real.
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
 }
