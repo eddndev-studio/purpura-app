@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -74,6 +73,7 @@ class AddEventFragment : Fragment() {
         AddEventScreen(
             state = state,
             externalPicks = externalPicks.receiveAsFlow(),
+            onBack = { findNavController().navigateUp() },
             onPickContact = ::ensureContactsPermissionThenPick,
             onPickLocation = ::openLocationPicker,
             onSubmit = ::submit,
@@ -97,13 +97,9 @@ class AddEventFragment : Fragment() {
                 ),
             )
         }
-        // Modo edicion: startEditing es idempotente; el VM emite el prefill que la pantalla vuelca.
-        editEventId?.let { id ->
-            // El titulo de la toolbar (scaffold XML) refleja "Editar evento" en modo edicion.
-            (requireActivity() as? AppCompatActivity)?.supportActionBar?.title =
-                getString(R.string.add_event_edit_title)
-            viewModel.startEditing(id)
-        }
+        // Modo edicion: startEditing es idempotente; el VM emite el prefill que la pantalla vuelca. El
+        // titulo ("Editar evento" vs "Anadir Evento") lo decide AddEventScreen segun state.editing.
+        editEventId?.let { id -> viewModel.startEditing(id) }
     }
 
     private fun submit(input: AddEventInput) {

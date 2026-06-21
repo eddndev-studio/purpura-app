@@ -11,7 +11,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.fragment.findNavController
 import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.model.Event
-import com.eddndev.purpura.ui.common.addHeatmapMenu
 import com.eddndev.purpura.ui.common.navigateToEventDetail
 import com.eddndev.purpura.ui.compose.purpuraComposeView
 import dagger.hilt.android.AndroidEntryPoint
@@ -37,11 +36,6 @@ class HomeFragment : Fragment() {
             onEventClick = ::onEventClick,
             onErrorShown = viewModel::errorShown,
         )
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        addHeatmapMenu(R.id.homeFragment)
     }
 
     // Navega al detalle del evento (guardado contra doble navegacion).

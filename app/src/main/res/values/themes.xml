@@ -25,7 +25,15 @@
         <item name="colorOnSurfaceVariant">@color/purpura_on_surface_variant</item>
         <item name="colorOutline">@color/purpura_outline</item>
         <item name="colorOutlineVariant">@color/purpura_outline_variant</item>
-        <item name="android:statusBarColor">@color/purpura_status_bar</item>
+        <!-- Edge-to-edge: barras transparentes manejadas por enableEdgeToEdge() en MainActivity.
+             En Android 15 statusBarColor/navigationBarColor estan obsoletos (ignorados). Sin el
+             DrawerLayout ya no se pinta el scrim morado que invadia la status bar. Desactivamos el
+             forzado de contraste para que las barras queden limpias; el color de los iconos lo fija
+             PurpuraTheme segun claro/oscuro. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
 
         <!-- Forma global -->
         <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Purpura.Pill</item>

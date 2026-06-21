@@ -6,37 +6,39 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.model.Event
+import com.eddndev.purpura.ui.common.EventDisplay
 import com.eddndev.purpura.ui.compose.EmptyState
 import com.eddndev.purpura.ui.compose.EventCard
+import com.eddndev.purpura.ui.compose.PurpuraScreen
+import com.eddndev.purpura.ui.compose.SectionHeader
 import com.eddndev.purpura.ui.theme.Pill
+import com.eddndev.purpura.ui.theme.Spacing
 
 /**
- * Inicio (REQ-HOME-001/002) en Compose. Lista los eventos de la ventana [hoy, hoy+4] con
- * pull-to-refresh (M3 [PullToRefreshBox]); el FAB crea un evento. El estado vacio se muestra como un
- * item a pantalla completa para que el gesto de refresco siga funcionando sin lista. Los errores de
- * sincronizacion son un aviso de un solo uso (snackbar). La logica de datos vive en [HomeViewModel];
- * esta pantalla solo recibe estado y callbacks (la navegacion la resuelve el Fragment).
+ * Inicio (REQ-HOME-001/002) en Compose. LargeTopAppBar con saludo (fecha de hoy) sobre [PurpuraScreen],
+ * lista de eventos de la ventana [hoy, hoy+4] con pull-to-refresh, y FAB extendido que se compacta al
+ * hacer scroll. El estado vacio se muestra como un item a pantalla completa para que el gesto de
+ * refresco siga funcionando. Los errores de sincronizacion son un aviso de un solo uso (snackbar).
  */
 @Composable
 fun HomeScreen(
@@ -48,7 +50,13 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
+    val listState = rememberLazyListState()
+    // El FAB se mantiene extendido arriba del todo y se compacta a icono al hacer scroll.
+    val fabExpanded by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset < 80
+        }
+    }
 
     state.errorRes?.let { messageRes ->
         val message = stringResource(messageRes)
@@ -58,27 +66,31 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
+    PurpuraScreen(
+        title = stringResource(R.string.title_home),
         modifier = modifier,
+        subtitle = EventDisplay.formatToday(),
+        large = true,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = onAddEvent,
+                expanded = fabExpanded,
                 icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                 text = { Text(stringResource(R.string.fab_add_event)) },
                 shape = Pill,
             )
         },
-        containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
         PullToRefreshBox(
             isRefreshing = state.isLoading,
             onRefresh = onRefresh,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.padding(innerPadding).fillMaxSize(),
         ) {
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = 8.dp, bottom = 96.dp),
+                contentPadding = PaddingValues(bottom = Spacing.fabClearance),
             ) {
                 if (state.isEmpty) {
                     item {
@@ -94,13 +106,22 @@ fun HomeScreen(
                         }
                     }
                 } else {
+                    item {
+                        SectionHeader(
+                            text = stringResource(R.string.home_section_upcoming),
+                            modifier = Modifier.padding(
+                                horizontal = Spacing.screenH,
+                                vertical = Spacing.sm,
+                            ),
+                        )
+                    }
                     items(state.events, key = { it.id }) { event ->
                         EventCard(
                             event = event,
                             onClick = { onEventClick(event) },
                             modifier = Modifier
                                 .animateItem()
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                                .padding(horizontal = Spacing.screenH, vertical = Spacing.xs),
                         )
                     }
                 }

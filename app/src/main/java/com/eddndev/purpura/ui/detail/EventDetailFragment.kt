@@ -1,5 +1,8 @@
 package com.eddndev.purpura.ui.detail
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -34,12 +37,14 @@ class EventDetailFragment : Fragment() {
         val state by viewModel.uiState.collectAsStateWithLifecycle()
         EventDetailScreen(
             state = state,
+            onBack = { findNavController().navigateUp() },
             onRetry = viewModel::retry,
             onChangeStatus = viewModel::changeStatus,
             onEdit = ::openEdit,
             onDelete = viewModel::delete,
             onDeleted = { findNavController().navigateUp() },
             onErrorShown = viewModel::errorShown,
+            onOpenMap = ::openInMaps,
         )
     }
 
@@ -52,6 +57,19 @@ class EventDetailFragment : Fragment() {
         // El formulario en modo edicion avisa al guardar; recargamos para reflejar los cambios.
         setFragmentResultListener(RESULT_EVENT_EDITED) { _, _ -> viewModel.refresh() }
         viewModel.load(eventId)
+    }
+
+    // Affordance "Abrir en Maps" del MapCard: lanza una app de mapas con la ubicacion del evento.
+    // geo:lat,lng?q=lat,lng(etiqueta). Si no hay app de mapas, se ignora sin crashear.
+    private fun openInMaps() {
+        val location = viewModel.uiState.value.event?.location ?: return
+        val label = Uri.encode(location.label?.takeIf { it.isNotBlank() } ?: getString(R.string.detail_location_label))
+        val uri = Uri.parse("geo:${location.lat},${location.lng}?q=${location.lat},${location.lng}($label)")
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, uri))
+        } catch (_: ActivityNotFoundException) {
+            // Sin app de mapas instalada: no hay accion posible.
+        }
     }
 
     // Abre el formulario de Anadir Evento en modo edicion (con el id), reutilizandolo. Guarda contra

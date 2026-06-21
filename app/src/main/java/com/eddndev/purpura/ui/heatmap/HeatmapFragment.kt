@@ -8,12 +8,13 @@ import androidx.compose.runtime.getValue
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.fragment.findNavController
 import com.eddndev.purpura.ui.compose.purpuraComposeView
 import dagger.hilt.android.AndroidEntryPoint
 
 // Mapa de calor mensual (densidad de eventos por dia). Migrado a Compose: el Fragment solo monta la
 // pantalla; el estado vive en HeatmapViewModel y la UI en HeatmapScreen. Tocar un dia muestra su
-// conteo en un Snackbar (gestionado dentro del composable). No usa permisos ni navegacion propia.
+// conteo en un Snackbar (gestionado dentro del composable). El toggle "Mes" vuelve al Calendario.
 @AndroidEntryPoint
 class HeatmapFragment : Fragment() {
 
@@ -30,6 +31,7 @@ class HeatmapFragment : Fragment() {
             onPrevMonth = viewModel::previousMonth,
             onNextMonth = viewModel::nextMonth,
             onErrorShown = viewModel::errorShown,
+            onShowCalendar = { findNavController().navigateUp() },
         )
     }
 }

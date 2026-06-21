@@ -1,7 +1,9 @@
 package com.eddndev.purpura.ui.calendar
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,13 +25,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.EventBusy
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -51,8 +53,13 @@ import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.ui.common.EventDisplay
 import com.eddndev.purpura.ui.common.MonthGrid
+import com.eddndev.purpura.ui.compose.EmptyState
 import com.eddndev.purpura.ui.compose.EventCard
+import com.eddndev.purpura.ui.compose.PurpuraScreen
+import com.eddndev.purpura.ui.compose.SectionHeader
+import com.eddndev.purpura.ui.compose.SegmentedToggle
 import com.eddndev.purpura.ui.compose.colorsFor
+import com.eddndev.purpura.ui.theme.Spacing
 import java.time.LocalDate
 import java.time.temporal.WeekFields
 import java.util.Locale
@@ -61,18 +68,23 @@ import java.util.Locale
 // orden del encabezado de dias y de la rejilla (debe coincidir con el del ViewModel/MonthGrid).
 private val CALENDAR_LOCALE: Locale = Locale("es", "MX")
 
-// Alto aproximado de una celda de dia (numero + fila de puntos + margenes). Sirve para dimensionar la
+// Alto comodo de una celda de dia (>=48dp segun spec): numero + fila de puntos con aire. Dimensiona la
 // rejilla, que no hace scroll propio (solo la lista del dia seleccionado scrollea), igual que el XML.
 private val CELL_HEIGHT = 56.dp
 private const val MAX_DOTS = 3
 
+// Modos de vista del Calendario para el toggle segmentado del app bar. "Mes" es la rejilla de esta
+// pantalla; "Calor" navega al Mapa de calor (lo resuelve el Fragment via onShowHeatmap).
+enum class CalendarView { MONTH, HEAT }
+
 /**
- * Calendario mensual (REQ-CAL-001..003) en Compose. Cabecera de mes con flechas, encabezado de dias
- * de la semana, rejilla de 7 columnas con puntos por tipo (resaltando hoy y el dia seleccionado) y,
- * debajo, la lista de eventos del dia seleccionado. La rejilla no hace scroll propio: solo la lista
- * inferior scrollea (como el XML). La logica vive en [CalendarViewModel]; esta pantalla solo recibe
- * estado y callbacks (la navegacion al Detalle la resuelve el Fragment). El error es un aviso de un
- * solo uso (snackbar).
+ * Calendario mensual (REQ-CAL-001..003) en Compose. Top-level (sin back): vive bajo [PurpuraScreen]
+ * con un SegmentedToggle "Mes / Calor" en el app bar (al elegir Calor se navega al Mapa de calor).
+ * Cabecera de mes con flechas grandes y "Junio 2026" centrado, encabezado de dias, rejilla de 7
+ * columnas con celdas comodas y puntos por tipo (resaltando hoy y el dia seleccionado) y, debajo, la
+ * lista de eventos del dia seleccionado. La rejilla no hace scroll propio: solo la lista inferior
+ * scrollea. La logica vive en [CalendarViewModel]; esta pantalla solo recibe estado y callbacks (la
+ * navegacion al Detalle/Calor la resuelve el Fragment). El error es un aviso de un solo uso (snackbar).
  */
 @Composable
 fun CalendarScreen(
@@ -82,6 +94,7 @@ fun CalendarScreen(
     onNextMonth: () -> Unit,
     onEventClick: (Event) -> Unit,
     onErrorShown: () -> Unit,
+    onShowHeatmap: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -100,16 +113,32 @@ fun CalendarScreen(
         MonthGrid.weekdayLabels(firstDayOfWeek, CALENDAR_LOCALE)
     }
 
-    Scaffold(
+    PurpuraScreen(
+        title = stringResource(R.string.title_calendar),
         modifier = modifier,
+        large = false,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background,
+        actions = {
+            // Toggle Mes/Calor: "Mes" siempre seleccionado aqui; elegir "Calor" navega al heatmap.
+            SegmentedToggle(
+                options = CalendarView.entries,
+                selected = CalendarView.MONTH,
+                onSelect = { view -> if (view == CalendarView.HEAT) onShowHeatmap() },
+                labelOf = { view ->
+                    when (view) {
+                        CalendarView.MONTH -> stringResource(R.string.calendar_view_month)
+                        CalendarView.HEAT -> stringResource(R.string.calendar_view_heat)
+                    }
+                },
+                modifier = Modifier.padding(end = Spacing.sm),
+            )
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = Spacing.screenH),
         ) {
             MonthHeader(
                 label = EventDisplay.formatMonth(state.yearMonth),
@@ -117,15 +146,18 @@ fun CalendarScreen(
                 onNextMonth = onNextMonth,
             )
 
-            // Barra de progreso del refresh contra la API (equivalente al loadingBar del XML). Solo se
-            // muestra mientras isLoading; al ocultarse no ocupa espacio (no desplaza la rejilla).
+            // Barra de progreso del refresh contra la API. Solo se muestra mientras isLoading; al
+            // ocultarse no ocupa espacio (no desplaza la rejilla).
             AnimatedVisibility(visible = state.isLoading) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Spacing.sm))
             WeekdayHeaderRow(labels = weekdayLabels)
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(Spacing.xs))
 
             MonthGridView(
                 cells = state.cells,
@@ -133,16 +165,13 @@ fun CalendarScreen(
             )
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
+                modifier = Modifier.padding(vertical = Spacing.md),
                 color = MaterialTheme.colorScheme.outlineVariant,
             )
 
-            Text(
+            SectionHeader(
                 text = state.selectedDate?.let(EventDisplay::formatFullDate).orEmpty(),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
             )
-            Spacer(Modifier.height(8.dp))
 
             SelectedDaySection(
                 events = state.selectedDayEvents,
@@ -154,7 +183,8 @@ fun CalendarScreen(
     }
 }
 
-// Cabecera del mes: flecha anterior, etiqueta centrada y flecha siguiente.
+// Cabecera del mes: flecha anterior, etiqueta centrada y flecha siguiente. Flechas grandes (48dp de
+// toque) para una navegacion comoda; el mes/anio en titleLarge centrado.
 @Composable
 private fun MonthHeader(
     label: String,
@@ -162,28 +192,35 @@ private fun MonthHeader(
     onNextMonth: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Spacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onPrevMonth) {
+        IconButton(onClick = onPrevMonth, modifier = Modifier.size(48.dp)) {
             Icon(
                 painter = painterResource(R.drawable.ic_chevron_left),
                 contentDescription = stringResource(R.string.calendar_prev_month),
                 tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(28.dp),
             )
         }
-        Text(
-            text = label,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center,
-        )
-        IconButton(onClick = onNextMonth) {
+        // Crossfade del titulo para que el cambio de mes se sienta como una transicion, no un salto.
+        Crossfade(targetState = label, label = "monthLabel", modifier = Modifier.weight(1f)) { current ->
+            Text(
+                text = current,
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+            )
+        }
+        IconButton(onClick = onNextMonth, modifier = Modifier.size(48.dp)) {
             Icon(
                 painter = painterResource(R.drawable.ic_chevron_right),
                 contentDescription = stringResource(R.string.calendar_next_month),
                 tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(28.dp),
             )
         }
     }
@@ -245,8 +282,9 @@ private fun MonthGridView(
     }
 }
 
-// Una celda de dia: numero + hasta MAX_DOTS puntos de color por tipo. Resalta hoy (borde de marca) y
-// el dia seleccionado (fondo de marca) con transicion de color suave.
+// Una celda de dia: numero + hasta MAX_DOTS puntos de color por tipo. Resalta hoy (borde de marca,
+// animado) y el dia seleccionado (fondo de marca). El fondo, el texto y el grosor del borde animan
+// para que la seleccion se sienta fluida.
 @Composable
 private fun DayCell(
     cell: CalendarCell.Day,
@@ -255,7 +293,7 @@ private fun DayCell(
 ) {
     val background by animateColorAsState(
         targetValue = if (cell.isSelected) {
-            MaterialTheme.colorScheme.primaryContainer
+            MaterialTheme.colorScheme.primary
         } else {
             Color.Transparent
         },
@@ -263,52 +301,56 @@ private fun DayCell(
     )
     val textColor by animateColorAsState(
         targetValue = when {
-            cell.isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
+            cell.isSelected -> MaterialTheme.colorScheme.onPrimary
             cell.isToday -> MaterialTheme.colorScheme.primary
             else -> MaterialTheme.colorScheme.onSurface
         },
         label = "dayCellText",
     )
-    val shape = RoundedCornerShape(12.dp)
-    val borderColor = MaterialTheme.colorScheme.primary
+    // Hoy se marca con borde de marca solo cuando no esta seleccionado (el fondo ya lo distingue).
+    val borderWidth by animateDpAsState(
+        targetValue = if (cell.isToday && !cell.isSelected) 1.5.dp else 0.dp,
+        label = "dayCellBorder",
+    )
+    val shape = CircleShape
 
     Column(
         modifier = modifier
             .height(CELL_HEIGHT)
-            .padding(2.dp)
+            .padding(Spacing.xs)
             .clip(shape)
             .background(background, shape)
-            .then(
-                if (cell.isToday && !cell.isSelected) {
-                    Modifier.border(1.5.dp, borderColor, shape)
-                } else {
-                    Modifier
-                },
-            )
+            .border(borderWidth, MaterialTheme.colorScheme.primary, shape)
             .clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = cell.date.dayOfMonth.toString(),
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.bodyLarge,
             color = textColor,
         )
-        Spacer(Modifier.height(2.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        Spacer(Modifier.height(Spacing.xxs))
+        // Puntos de tipo: sobre dia seleccionado usan onPrimary para contrastar con el fondo de marca.
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
             cell.typeDots.take(MAX_DOTS).forEach { type ->
+                val dotColor = if (cell.isSelected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    colorsFor(type).strong
+                }
                 Box(
                     modifier = Modifier
                         .size(6.dp)
-                        .background(colorsFor(type).strong, CircleShape),
+                        .background(dotColor, CircleShape),
                 )
             }
         }
     }
 }
 
-// Lista de eventos del dia seleccionado. Si esta vacia (y no esta cargando) muestra el texto de dia
-// sin eventos. AnimatedVisibility entre vacio y lista para una aparicion suave.
+// Lista de eventos del dia seleccionado. Si esta vacia (y no esta cargando) muestra un EmptyState del
+// kit. Crossfade entre vacio y lista para una aparicion suave.
 @Composable
 private fun SelectedDaySection(
     events: List<Event>,
@@ -316,31 +358,32 @@ private fun SelectedDaySection(
     onEventClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
-        AnimatedVisibility(visible = events.isEmpty() && !isLoading) {
-            Box(
-                modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(R.string.calendar_day_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    Crossfade(
+        targetState = events.isEmpty(),
+        label = "selectedDayContent",
+        modifier = modifier.fillMaxSize(),
+    ) { isEmpty ->
+        if (isEmpty) {
+            // No mostrar el vacio mientras carga: evita parpadeo entre dias durante el refresh.
+            AnimatedVisibility(visible = !isLoading) {
+                EmptyState(
+                    icon = Icons.Outlined.EventBusy,
+                    title = stringResource(R.string.calendar_day_empty_title),
+                    body = stringResource(R.string.calendar_day_empty),
+                    modifier = Modifier.heightIn(min = 160.dp),
                 )
             }
-        }
-        AnimatedVisibility(visible = events.isNotEmpty()) {
+        } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 16.dp),
+                contentPadding = PaddingValues(bottom = Spacing.xl),
+                verticalArrangement = Arrangement.spacedBy(Spacing.item),
             ) {
                 items(events, key = { it.id }) { event ->
                     EventCard(
                         event = event,
                         onClick = { onEventClick(event) },
-                        modifier = Modifier
-                            .animateItem()
-                            .padding(vertical = 4.dp),
+                        modifier = Modifier.animateItem(),
                     )
                 }
             }

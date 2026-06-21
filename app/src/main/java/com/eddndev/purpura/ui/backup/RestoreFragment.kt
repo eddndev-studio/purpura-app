@@ -12,6 +12,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.repository.CloudBackup
 import com.eddndev.purpura.ui.common.DriveAuth
@@ -77,6 +78,7 @@ class RestoreFragment : Fragment() {
         val state by viewModel.uiState.collectAsStateWithLifecycle()
         RestoreScreen(
             state = state,
+            onBack = { findNavController().navigateUp() },
             onRestoreFromDrive = { ensureDriveAuthThen { viewModel.loadDriveBackups() } },
             onRestoreFromFile = { openDocument.launch(arrayOf(MIME_JSON)) },
             onResultShown = viewModel::resultShown,

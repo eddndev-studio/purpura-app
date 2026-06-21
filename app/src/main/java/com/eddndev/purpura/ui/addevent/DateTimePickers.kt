@@ -1,5 +1,6 @@
 package com.eddndev.purpura.ui.addevent
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -10,8 +11,10 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.eddndev.purpura.R
+import com.eddndev.purpura.ui.theme.Spacing
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -32,21 +35,39 @@ fun PurpuraDatePickerDialog(
 ) {
     val initialMillis = initial?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+    // Confirmar deshabilitado hasta que haya una fecha elegida: evita cerrar el dialogo sin seleccion.
+    val hasSelection = datePickerState.selectedDateMillis != null
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = {
-                datePickerState.selectedDateMillis?.let { millis ->
-                    onConfirm(Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate())
-                }
-                onDismiss()
-            }) { Text(stringResource(R.string.action_accept)) }
+            TextButton(
+                enabled = hasSelection,
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        onConfirm(Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate())
+                    }
+                    onDismiss()
+                },
+            ) { Text(stringResource(R.string.action_accept)) }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     ) {
-        DatePicker(state = datePickerState)
+        // title del propio DatePicker: encabezado coherente con el resto del formulario.
+        DatePicker(
+            state = datePickerState,
+            title = {
+                Text(
+                    text = stringResource(R.string.add_event_date_picker_title),
+                    modifier = Modifier.padding(
+                        start = Spacing.xl,
+                        end = Spacing.md,
+                        top = Spacing.lg,
+                    ),
+                )
+            },
+        )
     }
 }
 

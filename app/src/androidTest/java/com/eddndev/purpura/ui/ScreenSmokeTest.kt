@@ -81,7 +81,7 @@ class ScreenSmokeTest {
     }
 
     @Test
-    fun about_renders() = render { AboutScreen(onLogout = {}) }
+    fun about_renders() = render { AboutScreen(onBack = {}, onLogout = {}) }
 
     @Test
     fun auth_renders() = render {
@@ -90,12 +90,12 @@ class ScreenSmokeTest {
 
     @Test
     fun backup_renders() = render {
-        BackupScreen(state = BackupUiState(), onBackupToDrive = {}, onBackupToFile = {}, onMessageShown = {})
+        BackupScreen(state = BackupUiState(), onBack = {}, onBackupToDrive = {}, onBackupToFile = {}, onMessageShown = {})
     }
 
     @Test
     fun restore_renders() = render {
-        RestoreScreen(state = RestoreUiState(), onRestoreFromDrive = {}, onRestoreFromFile = {}, onResultShown = {}, onErrorShown = {})
+        RestoreScreen(state = RestoreUiState(), onBack = {}, onRestoreFromDrive = {}, onRestoreFromFile = {}, onResultShown = {}, onErrorShown = {})
     }
 
     @Test
@@ -109,7 +109,7 @@ class ScreenSmokeTest {
         }
         CalendarScreen(
             state = CalendarUiState(yearMonth = YearMonth.now(), cells = cells, selectedDate = today, selectedDayEvents = listOf(sampleEvent()), isLoading = false, errorRes = null),
-            onSelectDate = {}, onPrevMonth = {}, onNextMonth = {}, onEventClick = {}, onErrorShown = {},
+            onSelectDate = {}, onPrevMonth = {}, onNextMonth = {}, onEventClick = {}, onErrorShown = {}, onShowHeatmap = {},
         )
     }
 
@@ -124,7 +124,7 @@ class ScreenSmokeTest {
         }
         HeatmapScreen(
             state = HeatmapUiState(yearMonth = YearMonth.now(), cells = cells, totalEvents = 12, isLoading = false, errorRes = null),
-            onPrevMonth = {}, onNextMonth = {}, onErrorShown = {},
+            onPrevMonth = {}, onNextMonth = {}, onShowCalendar = {}, onErrorShown = {},
         )
     }
 
@@ -140,7 +140,7 @@ class ScreenSmokeTest {
     fun detail_renders() = render {
         EventDetailScreen(
             state = DetailUiState(event = sampleEvent(), isLoading = false, isWorking = false, errorRes = null, loadFailed = false, deleted = false),
-            onRetry = {}, onChangeStatus = {}, onEdit = {}, onDelete = {}, onDeleted = {}, onErrorShown = {},
+            onBack = {}, onRetry = {}, onChangeStatus = {}, onEdit = {}, onDelete = {}, onDeleted = {}, onErrorShown = {},
         )
     }
 
