@@ -1,6 +1,8 @@
 package com.eddndev.purpura.ui.theme
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -85,11 +87,16 @@ fun PurpuraTheme(
 
     val view = LocalView.current
     if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-            // Edge-to-edge: el contenido va bajo las barras; aqui solo se ajusta el color de los
-            // iconos de la status bar para que contrasten con el fondo del tema.
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        // El context del ComposeView puede ser un ContextWrapper (Hilt envuelve el del Fragment en un
+        // FragmentContextWrapper): hay que desenvolver hasta el Activity, NUNCA castear directo (eso
+        // crasheaba con ClassCastException en todas las pantallas).
+        val activity = view.context.findActivity()
+        if (activity != null) {
+            SideEffect {
+                // Edge-to-edge: el contenido va bajo las barras; aqui solo se ajusta el color de los
+                // iconos de la status bar para que contrasten con el fondo del tema.
+                WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars = !darkTheme
+            }
         }
     }
 
@@ -108,4 +115,12 @@ object PurpuraTheme {
     val colors: PurpuraExtendedColors
         @Composable
         get() = LocalPurpuraColors.current
+}
+
+// Desenvuelve la cadena de ContextWrapper hasta encontrar el Activity (o null). Necesario porque el
+// context de un ComposeView dentro de un Fragment con Hilt es un FragmentContextWrapper, no el Activity.
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
