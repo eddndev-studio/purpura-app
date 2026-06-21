@@ -47,6 +47,14 @@ class SessionRepositoryImpl @Inject constructor(
         sessionState.value = null
     }
 
+    // Token expirado/invalido (401): se llama desde el hilo de OkHttp, asi que es SINCRONA y NO toca
+    // Room. Borra el token (apply() es async a disco pero thread-safe) y emite sesion null; el gate
+    // de MainActivity reacciona y lleva a Auth. El cache de Room se limpia en el proximo login/logout.
+    override fun invalidate() {
+        tokenStore.clear()
+        sessionState.value = null
+    }
+
     private fun readSession(): Session? {
         val token = tokenStore.peekToken() ?: return null
         val userDto = tokenStore.readUser() ?: return null
