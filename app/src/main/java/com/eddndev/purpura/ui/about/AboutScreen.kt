@@ -44,6 +44,7 @@ import com.eddndev.purpura.ui.theme.Spacing
  */
 @Composable
 fun AboutScreen(
+    versionName: String,
     onLogout: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -87,7 +88,8 @@ fun AboutScreen(
             )
             Spacer(Modifier.height(Spacing.sm))
             Text(
-                text = stringResource(R.string.about_version),
+                // Version real desde BuildConfig (el tag del release la inyecta); no hardcodear.
+                text = stringResource(R.string.account_version, versionName),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

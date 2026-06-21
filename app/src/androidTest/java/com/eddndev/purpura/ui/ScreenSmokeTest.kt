@@ -81,7 +81,7 @@ class ScreenSmokeTest {
     }
 
     @Test
-    fun about_renders() = render { AboutScreen(onBack = {}, onLogout = {}) }
+    fun about_renders() = render { AboutScreen(versionName = "0.0.0", onBack = {}, onLogout = {}) }
 
     @Test
     fun auth_renders() = render {
