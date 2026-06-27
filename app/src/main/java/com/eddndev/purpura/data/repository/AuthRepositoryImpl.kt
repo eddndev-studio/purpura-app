@@ -1,5 +1,6 @@
 package com.eddndev.purpura.data.repository
 
+import com.eddndev.purpura.data.remote.api.AccountApi
 import com.eddndev.purpura.data.remote.api.AuthApi
 import com.eddndev.purpura.data.remote.dto.GoogleAuthRequest
 import com.eddndev.purpura.data.remote.dto.LoginRequest
@@ -11,12 +12,14 @@ import com.eddndev.purpura.domain.model.AuthResult
 import com.eddndev.purpura.domain.repository.AuthRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 import javax.inject.Inject
 
 // Llama a /auth/* y mapea a AuthResult/DomainError. La persistencia de la sesion la hace el
 // caso de uso (LoginUseCase, etc.) via SessionRepository, no este repositorio.
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
+    private val accountApi: AccountApi,
     private val authMapper: AuthRemoteMapper,
     private val errorAdapter: ProblemErrorAdapter,
     @IoDispatcher private val io: CoroutineDispatcher,
@@ -42,4 +45,16 @@ class AuthRepositoryImpl @Inject constructor(
                 authMapper.toAuthResult(authApi.google(GoogleAuthRequest(idToken)))
             }
         }
+
+    // Borra la cuenta en el backend (204 esperado). Como es Response<Unit>, Retrofit no lanza por
+    // un status no-2xx: lo convertimos en HttpException para que el errorAdapter lo mapee a
+    // DomainError (mismo patron que EventRepositoryImpl.delete). No toca la sesion local.
+    override suspend fun deleteAccount() {
+        withContext(io) {
+            errorAdapter.call {
+                val response = accountApi.deleteAccount()
+                if (!response.isSuccessful) throw HttpException(response)
+            }
+        }
+    }
 }

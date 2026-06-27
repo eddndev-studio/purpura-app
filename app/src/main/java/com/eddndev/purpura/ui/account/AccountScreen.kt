@@ -17,17 +17,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,18 +60,34 @@ import com.eddndev.purpura.ui.theme.Spacing
 fun AccountScreen(
     session: Session?,
     versionName: String,
+    uiState: AccountUiState,
     onBackup: () -> Unit,
     onRestore: () -> Unit,
     onAbout: () -> Unit,
     onLogout: () -> Unit,
+    onDeleteAccount: () -> Unit,
+    onErrorShown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val errorColor = MaterialTheme.colorScheme.error
+    val snackbarHostState = remember { SnackbarHostState() }
+    val deleting = uiState.isDeletingAccount
+
+    // Aviso de un solo uso si el borrado de cuenta falla (la sesion se conserva intacta).
+    uiState.errorRes?.let { messageRes ->
+        val message = stringResource(messageRes)
+        LaunchedEffect(messageRes, message) {
+            snackbarHostState.showSnackbar(message)
+            onErrorShown()
+        }
+    }
 
     PurpuraScreen(
         title = stringResource(R.string.title_account),
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -109,6 +130,7 @@ fun AccountScreen(
             Spacer(Modifier.height(Spacing.section))
             OutlinedButton(
                 onClick = { showLogoutDialog = true },
+                enabled = !deleting,
                 shape = Pill,
                 // Rol de error: el cierre de sesion es destructivo, se tine de error sin perder la pill.
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = errorColor),
@@ -118,6 +140,29 @@ fun AccountScreen(
                 Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = null)
                 Spacer(Modifier.size(Spacing.sm))
                 Text(stringResource(R.string.account_logout))
+            }
+
+            // Eliminar cuenta: la accion mas severa (irreversible, borra TODO en el servidor). Va como
+            // boton de texto en rol de error bajo el de cerrar sesion: presente pero subordinado, con
+            // una confirmacion reforzada. Mientras el borrado esta en vuelo muestra progreso en linea.
+            Spacer(Modifier.height(Spacing.sm))
+            TextButton(
+                onClick = { showDeleteDialog = true },
+                enabled = !deleting,
+                colors = ButtonDefaults.textButtonColors(contentColor = errorColor),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                if (deleting) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        color = errorColor,
+                        modifier = Modifier.size(18.dp),
+                    )
+                } else {
+                    Icon(Icons.Outlined.DeleteForever, contentDescription = null)
+                    Spacer(Modifier.size(Spacing.sm))
+                    Text(stringResource(R.string.account_delete_account))
+                }
             }
 
             // Version como pie centrado: dato secundario, fuera del flujo de acciones.
@@ -151,6 +196,30 @@ fun AccountScreen(
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
                     Text(stringResource(R.string.about_logout_cancel))
+                }
+            },
+        )
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            icon = { Icon(Icons.Outlined.DeleteForever, contentDescription = null, tint = errorColor) },
+            title = { Text(stringResource(R.string.account_delete_title)) },
+            text = { Text(stringResource(R.string.account_delete_message)) },
+            confirmButton = {
+                // Confirmar en rol de error: dispara el borrado irreversible (el VM gestiona el progreso).
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteAccount()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = errorColor),
+                ) { Text(stringResource(R.string.account_delete_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(R.string.account_delete_cancel))
                 }
             },
         )

@@ -155,6 +155,8 @@ class FakeAuthRepository : AuthRepository {
     var loginResult: AuthResult? = null
     var loginError: Throwable? = null
     val loginCalls = mutableListOf<Pair<String, String>>()
+    var deleteAccountError: Throwable? = null
+    var deleteAccountCalls = 0
 
     override suspend fun register(email: String, nombre: String, password: String): AuthResult =
         requireNotNull(loginResult) { "loginResult no configurado" }
@@ -167,6 +169,11 @@ class FakeAuthRepository : AuthRepository {
 
     override suspend fun loginWithGoogle(idToken: String): AuthResult =
         requireNotNull(loginResult) { "loginResult no configurado" }
+
+    override suspend fun deleteAccount() {
+        deleteAccountCalls++
+        deleteAccountError?.let { throw it }
+    }
 }
 
 // Fake del puerto de sesion.

@@ -28,13 +28,17 @@ class AccountFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View = purpuraComposeView {
         val session by viewModel.session.collectAsStateWithLifecycle()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         AccountScreen(
             session = session,
             versionName = BuildConfig.VERSION_NAME,
+            uiState = uiState,
             onBackup = { findNavController().navigate(R.id.backupFragment) },
             onRestore = { findNavController().navigate(R.id.restoreFragment) },
             onAbout = { findNavController().navigate(R.id.aboutFragment) },
             onLogout = viewModel::logout,
+            onDeleteAccount = viewModel::deleteAccount,
+            onErrorShown = viewModel::errorShown,
         )
     }
 }
