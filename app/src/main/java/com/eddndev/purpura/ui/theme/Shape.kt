@@ -21,3 +21,9 @@ val PurpuraShapes = Shapes(
     large = RoundedCornerShape(24.dp),
     extraLarge = RoundedCornerShape(28.dp),
 )
+
+/** Forma de las hojas modales (ModalBottomSheet): solo esquinas superiores, 28dp. */
+val SheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+
+/** Alias semantico de la forma de card (16dp) para no repetir el literal en los sitios de llamada. */
+val CardShape = RoundedCornerShape(16.dp)

@@ -38,8 +38,23 @@ val OnSurfaceLight = Color(0xFF1D1A20)
 val SurfaceVariantLight = Color(0xFFE7E0EB)
 val OnSurfaceVariantLight = Color(0xFF49454F)
 val SurfaceContainerLight = Color(0xFFF4EDF7)
-val OutlineLight = Color(0xFF7A757F)
-val OutlineVariantLight = Color(0xFFCAC4CF)
+// Hairlines tenidos hacia el morado de marca (el gris neutro se sentia ajeno en la paleta mono-morada).
+val OutlineLight = Color(0xFF7C7385)
+val OutlineVariantLight = Color(0xFFD5CBDE)
+
+// Rampa tonal de superficie completa (mono-morado): contenedores elevados, sheets, snackbars y
+// dialogos NO deben caer al violeta baseline de M3. surfaceTint = primary para la elevacion tonal.
+val SurfaceDimLight = Color(0xFFE2D7E8)
+val SurfaceBrightLight = Color(0xFFFFFBFE)
+val SurfaceContainerLowestLight = Color(0xFFFFFFFF)
+val SurfaceContainerLowLight = Color(0xFFFBF4FB)
+val SurfaceContainerHighLight = Color(0xFFEEE6F2)
+val SurfaceContainerHighestLight = Color(0xFFE8DFEE)
+val SurfaceTintLight = PrimaryLight
+val ScrimLight = Color(0xFF000000)
+val InversePrimaryLight = Color(0xFFD0BCFF)
+val InverseSurfaceLight = Color(0xFF322A38)
+val InverseOnSurfaceLight = Color(0xFFF5EEFA)
 
 // ---------------------------------------------------------------------------
 // Roles M3 - Tema oscuro (noche "high-end")
@@ -69,6 +84,19 @@ val OnSurfaceVariantDark = Color(0xFFD0C4DE)
 val SurfaceContainerDark = Color(0xFF241A30)
 val OutlineDark = Color(0xFF988CA6)
 val OutlineVariantDark = Color(0xFF463B55)
+
+// Rampa tonal de superficie (noche "high-end" mono-morada).
+val SurfaceDimDark = Color(0xFF100A18)
+val SurfaceBrightDark = Color(0xFF3A3142)
+val SurfaceContainerLowestDark = Color(0xFF0B0710)
+val SurfaceContainerLowDark = Color(0xFF1A1322)
+val SurfaceContainerHighDark = Color(0xFF2F2440)
+val SurfaceContainerHighestDark = Color(0xFF3A2E4C)
+val SurfaceTintDark = PrimaryDark
+val ScrimDark = Color(0xFF000000)
+val InversePrimaryDark = Color(0xFF6A1B9A)
+val InverseSurfaceDark = Color(0xFFECE2F5)
+val InverseOnSurfaceDark = Color(0xFF322A38)
 
 // ---------------------------------------------------------------------------
 // Semanticos: estatus de evento (semaforo, deliberadamente no morado)
