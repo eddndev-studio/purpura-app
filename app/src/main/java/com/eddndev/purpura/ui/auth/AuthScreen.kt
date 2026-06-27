@@ -89,9 +89,15 @@ fun AuthScreen(
     val emailValid = email.isBlank() || Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
     val emailError = email.isNotBlank() && !emailValid
 
+    // Contrasena: el backend exige >= 8 (auth_service.go minPasswordLen). Solo en REGISTRO marcamos el
+    // campo en rojo cuando ya hay texto pero queda corto; en login no prejuzgamos (la credencial la
+    // valida el servidor). El hint "Minimo 8 caracteres" se muestra siempre en registro como guia.
+    val passwordTooShort = isRegister && password.isNotEmpty() && password.length < MIN_PASSWORD_LENGTH
+
     // stringResource debe resolverse en scope composable, no dentro del click.
     val emptyFieldsMessage = stringResource(R.string.auth_error_empty_fields)
     val invalidEmailMessage = stringResource(R.string.auth_error_invalid_email)
+    val passwordHintMessage = stringResource(R.string.auth_password_hint)
 
     // Error del ViewModel -> snackbar de un solo uso (igual que HomeScreen).
     if (state is AuthUiState.Error) {
@@ -116,6 +122,13 @@ fun AuthScreen(
         if (!Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
             scope.launch {
                 snackbarHostState.showSnackbar(invalidEmailMessage, duration = SnackbarDuration.Short)
+            }
+            return
+        }
+        // Solo en registro: corta antes de pegarle al backend y avisa con el mismo hint del campo.
+        if (isRegister && password.length < MIN_PASSWORD_LENGTH) {
+            scope.launch {
+                snackbarHostState.showSnackbar(passwordHintMessage, duration = SnackbarDuration.Short)
             }
             return
         }
@@ -187,10 +200,16 @@ fun AuthScreen(
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                // Tope de 72 para no exceder el maximo del backend (maxPasswordLen) en el caso comun
+                // ASCII; el servidor sigue siendo la autoridad sobre el limite real (en bytes).
+                onValueChange = { if (it.length <= MAX_PASSWORD_LENGTH) password = it },
                 label = { Text(stringResource(R.string.auth_password)) },
                 singleLine = true,
                 enabled = !loading,
+                isError = passwordTooShort,
+                // Slot de soporte SIEMPRE presente (como el campo de correo) para que el campo no salte
+                // al alternar login/registro: muestra el hint en registro y queda vacio en login.
+                supportingText = { Text(if (isRegister) passwordHintMessage else "") },
                 shape = Pill,
                 visualTransformation = if (passwordVisible) {
                     VisualTransformation.None
@@ -246,3 +265,9 @@ fun AuthScreen(
         }
     }
 }
+
+// Reflejan la politica del backend (auth_service.go: minPasswordLen = 8, maxPasswordLen = 72) para dar
+// feedback inmediato sin viaje de red. El backend mide en BYTES; aqui en caracteres como guarda
+// practica del caso comun (el servidor es la autoridad final). Mantener en sincronia con el backend.
+private const val MIN_PASSWORD_LENGTH = 8
+private const val MAX_PASSWORD_LENGTH = 72
