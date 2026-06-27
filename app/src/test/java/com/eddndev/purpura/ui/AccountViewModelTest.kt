@@ -12,6 +12,7 @@ import com.eddndev.purpura.domain.usecase.auth.DeleteAccountUseCase
 import com.eddndev.purpura.domain.usecase.auth.LogoutUseCase
 import com.eddndev.purpura.domain.usecase.auth.ObserveSessionUseCase
 import com.eddndev.purpura.ui.account.AccountViewModel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -85,6 +86,39 @@ class AccountViewModelTest {
     }
 
     @Test
+    fun `un 404 del backend se trata como exito y limpia la sesion`() = runTest(dispatcher) {
+        // Borrado idempotente: si la cuenta ya no existe (404 user_not_found), igual se limpia la
+        // sesion local en vez de dejar al usuario atrapado con un aviso.
+        sessionRepository.sessionFlow.value = sampleSession()
+        authRepository.deleteError = DomainError.UserNotFound
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.session.collect {} }
+
+        viewModel.deleteAccount()
+
+        assertTrue(sessionRepository.cleared)
+        assertNull(sessionRepository.sessionFlow.value)
+        assertNull(viewModel.uiState.value.errorRes)
+    }
+
+    @Test
+    fun `toques repetidos durante el borrado se ignoran`() = runTest(dispatcher) {
+        val gate = CompletableDeferred<Unit>()
+        authRepository.deleteGate = gate
+        val viewModel = buildViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+
+        viewModel.deleteAccount() // queda en vuelo (suspendido en el gate)
+        assertTrue(viewModel.uiState.value.isDeletingAccount)
+        viewModel.deleteAccount() // el guard lo ignora mientras hay uno en curso
+
+        assertEquals(1, authRepository.deleteCalls)
+
+        gate.complete(Unit) // deja terminar el primero
+        assertTrue(sessionRepository.cleared)
+    }
+
+    @Test
     fun `errorShown limpia el aviso`() = runTest(dispatcher) {
         authRepository.deleteError = DomainError.Network
         val viewModel = buildViewModel()
@@ -115,6 +149,10 @@ private class FakeAuthRepository : AuthRepository {
     var deleteCalls = 0
     var deleteError: Throwable? = null
 
+    // Si se setea, deleteAccount() se suspende en este gate tras contar la llamada: permite
+    // probar el guard de re-entrada con un borrado "en vuelo".
+    var deleteGate: CompletableDeferred<Unit>? = null
+
     override suspend fun register(email: String, nombre: String, password: String): AuthResult =
         error("no usado en estas pruebas")
 
@@ -126,6 +164,7 @@ private class FakeAuthRepository : AuthRepository {
 
     override suspend fun deleteAccount() {
         deleteCalls++
+        deleteGate?.await()
         deleteError?.let { throw it }
     }
 }

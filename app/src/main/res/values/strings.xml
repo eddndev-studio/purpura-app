@@ -61,6 +61,7 @@
     <string name="account_delete_message">Se eliminarán de forma permanente tu cuenta y todos tus eventos del servidor. Esta acción no se puede deshacer.</string>
     <string name="account_delete_confirm">Eliminar definitivamente</string>
     <string name="account_delete_cancel">Cancelar</string>
+    <string name="account_deleting">Eliminando cuenta…</string>
 
     <!-- Placeholders del esqueleto (se reemplazan al implementar features) -->
     <string name="placeholder_home">Aquí aparecerán tus eventos de hoy y los próximos 4 días.</string>

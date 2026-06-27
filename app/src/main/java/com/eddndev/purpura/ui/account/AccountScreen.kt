@@ -40,6 +40,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eddndev.purpura.R
@@ -74,6 +78,7 @@ fun AccountScreen(
     val errorColor = MaterialTheme.colorScheme.error
     val snackbarHostState = remember { SnackbarHostState() }
     val deleting = uiState.isDeletingAccount
+    val deletingDesc = stringResource(R.string.account_deleting)
 
     // Aviso de un solo uso si el borrado de cuenta falla (la sesion se conserva intacta).
     uiState.errorRes?.let { messageRes ->
@@ -153,10 +158,17 @@ fun AccountScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 if (deleting) {
+                    // Anuncia el progreso a lectores de pantalla: el spinner reemplaza al texto, asi
+                    // que sin esto TalkBack no diria nada del borrado en curso.
                     CircularProgressIndicator(
                         strokeWidth = 2.dp,
                         color = errorColor,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier
+                            .size(18.dp)
+                            .semantics {
+                                contentDescription = deletingDesc
+                                liveRegion = LiveRegionMode.Polite
+                            },
                     )
                 } else {
                     Icon(Icons.Outlined.DeleteForever, contentDescription = null)
