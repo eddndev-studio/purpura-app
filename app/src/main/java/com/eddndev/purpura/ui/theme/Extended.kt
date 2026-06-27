@@ -30,6 +30,14 @@ data class PurpuraExtendedColors(
     val heatmap: List<Color>,
     val heatmapLabelIntense: Color,
     val onBrandSubtle: Color,
+    /** Sombra proyectada (spotColor) suave y tenida de morado: el rasgo "premium" de la marca. */
+    val shadowSpot: Color,
+    /** Sombra ambiental (ambientColor): muy sutil, da volumen sin oscurecer. */
+    val shadowAmbient: Color,
+    /** Tope del degradado del MapCard (transparente). */
+    val mapOverlayTop: Color,
+    /** Base del degradado del MapCard (oscuro): da contraste a la etiqueta de direccion. */
+    val mapOverlayBottom: Color,
 )
 
 internal val LightExtendedColors = PurpuraExtendedColors(
@@ -44,6 +52,10 @@ internal val LightExtendedColors = PurpuraExtendedColors(
     heatmap = HeatmapLight,
     heatmapLabelIntense = HeatmapLabelIntenseLight,
     onBrandSubtle = OnBrandSubtleLight,
+    shadowSpot = Color(0x336A1B9A),
+    shadowAmbient = Color(0x14000000),
+    mapOverlayTop = Color(0x00000000),
+    mapOverlayBottom = Color(0x99100A18),
 )
 
 internal val DarkExtendedColors = PurpuraExtendedColors(
@@ -58,6 +70,10 @@ internal val DarkExtendedColors = PurpuraExtendedColors(
     heatmap = HeatmapDark,
     heatmapLabelIntense = HeatmapLabelIntenseDark,
     onBrandSubtle = OnBrandSubtleDark,
+    shadowSpot = Color(0x66000000),
+    shadowAmbient = Color(0x4D000000),
+    mapOverlayTop = Color(0x00000000),
+    mapOverlayBottom = Color(0xCC000000),
 )
 
 /** Default = claro; [PurpuraTheme] inyecta el set correcto segun el modo. */

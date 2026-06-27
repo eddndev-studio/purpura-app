@@ -19,7 +19,11 @@ data class QueryFilters(
     val to: LocalDate? = null,
     val year: Int? = null,
     val month: Int? = null,
-)
+) {
+    // Hay filtro activo si el usuario fijo periodo, tipo o estatus. Lo usan el resumen de chips
+    // (fijado arriba de la lista) y la accion "Limpiar filtros" del estado vacio.
+    val hasActiveFilters: Boolean get() = mode != null || type != null || status != null
+}
 
 // Estado de Consultar. La lista se reemplaza al buscar (pagina 1) y se acumula al paginar.
 // `isLoading` cubre la busqueda/refiltrado; `isPaging` la carga de la siguiente pagina. Un error

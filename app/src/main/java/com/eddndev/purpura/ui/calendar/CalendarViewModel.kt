@@ -79,6 +79,10 @@ class CalendarViewModel @Inject constructor(
 
     fun previousMonth() = goToMonth(yearMonth.value.minusMonths(1))
 
+    // Salta al mes actual desde "Hoy" del encabezado. goToMonth reinicia la seleccion a null y
+    // defaultSelection devuelve `today` cuando el mes lo contiene, asi que selecciona hoy de paso.
+    fun goToToday() = goToMonth(YearMonth.from(today))
+
     fun errorShown() {
         errorRes.value = null
     }

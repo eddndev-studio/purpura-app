@@ -7,6 +7,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.eddndev.purpura.ui.theme.Pill
 
 /**
  * Control segmentado (single choice) de marca. Lo usa el toggle "Mes / Calor" del Calendario y
@@ -29,7 +30,14 @@ fun <T> SegmentedToggle(
             SegmentedButton(
                 selected = option == selected,
                 onClick = { onSelect(option) },
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                // baseShape = Pill: las puntas exteriores quedan en capsula (50%), fiel a la marca.
+                shape = SegmentedButtonDefaults.itemShape(
+                    index = index,
+                    count = options.size,
+                    baseShape = Pill,
+                ),
+                // Sin el check de seleccion: el color tonal ya comunica el estado y deja mas aire.
+                icon = {},
             ) {
                 Text(labelOf(option))
             }

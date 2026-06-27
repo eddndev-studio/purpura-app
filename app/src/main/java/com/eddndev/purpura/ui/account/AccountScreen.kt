@@ -1,7 +1,7 @@
 package com.eddndev.purpura.ui.account
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,10 +20,11 @@ import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -33,12 +34,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.model.Session
+import com.eddndev.purpura.ui.compose.PurpuraListRow
 import com.eddndev.purpura.ui.compose.PurpuraScreen
 import com.eddndev.purpura.ui.compose.SectionHeader
 import com.eddndev.purpura.ui.theme.Pill
@@ -46,8 +47,9 @@ import com.eddndev.purpura.ui.theme.Spacing
 
 /**
  * Cuenta (hub): cabecera con la sesion (avatar + nombre/email), seccion Datos (Respaldo/Restaurar),
- * seccion Aplicacion (Acerca de + version) y cierre de sesion con confirmacion. Reemplaza al antiguo
- * drawer: agrupa todo lo secundario detras de una sola pestana del bottom nav.
+ * seccion Aplicacion (Acerca de) y cierre de sesion con confirmacion. Reemplaza al antiguo drawer:
+ * agrupa todo lo secundario detras de una sola pestana del bottom nav. El ritmo vertical usa Spacers
+ * explicitos (no spacedBy) para separar exactamente las secciones (24dp) de las filas (8dp).
  */
 @Composable
 fun AccountScreen(
@@ -60,11 +62,11 @@ fun AccountScreen(
     modifier: Modifier = Modifier,
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
+    val errorColor = MaterialTheme.colorScheme.error
 
     PurpuraScreen(
         title = stringResource(R.string.title_account),
         modifier = modifier,
-        large = true,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -72,50 +74,61 @@ fun AccountScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = Spacing.screenH)
                 .padding(bottom = Spacing.xl),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
             AccountHeader(session)
 
-            Spacer(Modifier.height(Spacing.sm))
+            // Spacing.section separa cada bloque de su SectionHeader; las filas internas van a sm.
+            Spacer(Modifier.height(Spacing.section))
             SectionHeader(stringResource(R.string.account_section_data))
-            AccountRow(
+            PurpuraListRow(
                 icon = Icons.Outlined.CloudUpload,
                 title = stringResource(R.string.account_backup),
                 subtitle = stringResource(R.string.account_backup_desc),
                 onClick = onBackup,
             )
-            AccountRow(
+            Spacer(Modifier.height(Spacing.sm))
+            PurpuraListRow(
                 icon = Icons.Outlined.CloudDownload,
                 title = stringResource(R.string.account_restore),
                 subtitle = stringResource(R.string.account_restore_desc),
                 onClick = onRestore,
             )
 
-            Spacer(Modifier.height(Spacing.sm))
+            Spacer(Modifier.height(Spacing.section))
             SectionHeader(stringResource(R.string.account_section_app))
-            AccountRow(
+            PurpuraListRow(
                 icon = Icons.Outlined.Info,
                 title = stringResource(R.string.account_about),
                 subtitle = stringResource(R.string.account_about_desc),
                 onClick = onAbout,
             )
-            Text(
-                text = stringResource(R.string.account_version, versionName),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = Spacing.xs, top = Spacing.xs),
-            )
 
-            Spacer(Modifier.height(Spacing.lg))
+            // Divisor con holgura simetrica: separa la zona destructiva del resto sin pegarse al boton.
+            Spacer(Modifier.height(Spacing.section))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Spacer(Modifier.height(Spacing.section))
             OutlinedButton(
                 onClick = { showLogoutDialog = true },
                 shape = Pill,
+                // Rol de error: el cierre de sesion es destructivo, se tine de error sin perder la pill.
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = errorColor),
+                border = BorderStroke(1.dp, errorColor),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = null)
                 Spacer(Modifier.size(Spacing.sm))
                 Text(stringResource(R.string.account_logout))
             }
+
+            // Version como pie centrado: dato secundario, fuera del flujo de acciones.
+            Spacer(Modifier.height(Spacing.section))
+            Text(
+                text = stringResource(R.string.account_version, versionName),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 
@@ -126,10 +139,14 @@ fun AccountScreen(
             title = { Text(stringResource(R.string.about_logout_title)) },
             text = { Text(stringResource(R.string.about_logout_message)) },
             confirmButton = {
-                TextButton(onClick = {
-                    showLogoutDialog = false
-                    onLogout()
-                }) { Text(stringResource(R.string.about_logout_confirm)) }
+                // El confirmar tambien va con rol de error: coincide con el boton de la pantalla.
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+                        onLogout()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = errorColor),
+                ) { Text(stringResource(R.string.about_logout_confirm)) }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
@@ -142,6 +159,8 @@ fun AccountScreen(
 
 @Composable
 private fun AccountHeader(session: Session?) {
+    val rawName = session?.user?.nombre
+    val initials = remember(rawName) { initialsOf(rawName) }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
@@ -149,17 +168,26 @@ private fun AccountHeader(session: Session?) {
                 .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Person,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(28.dp),
-            )
+            // Iniciales si hay nombre real; el icono Person es el reemplazo cuando aun no hay sesion.
+            if (initials.isNotEmpty()) {
+                Text(
+                    text = initials,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.Person,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(28.dp),
+                )
+            }
         }
         Spacer(Modifier.size(Spacing.lg))
         Column {
             Text(
-                text = session?.user?.nombre?.takeIf { it.isNotBlank() }
+                text = rawName?.takeIf { it.isNotBlank() }
                     ?: stringResource(R.string.account_default_name),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -176,55 +204,13 @@ private fun AccountHeader(session: Session?) {
     }
 }
 
-@Composable
-private fun AccountRow(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-) {
-    Surface(
-        onClick = onClick,
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Row(
-            modifier = Modifier.padding(Spacing.lg),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.lg),
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Icon(
-                painter = painterResource(R.drawable.ic_chevron_right),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp),
-            )
-        }
+// Iniciales del nombre: primera + ultima palabra (o solo la primera). Vacio si el nombre esta en
+// blanco, para que la cabecera caiga al icono Person.
+private fun initialsOf(name: String?): String {
+    val parts = name?.trim()?.split(Regex("\\s+"))?.filter { it.isNotBlank() }.orEmpty()
+    return when {
+        parts.isEmpty() -> ""
+        parts.size == 1 -> parts[0].take(1).uppercase()
+        else -> (parts.first().take(1) + parts.last().take(1)).uppercase()
     }
 }

@@ -1,21 +1,17 @@
 package com.eddndev.purpura.ui.backup
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CloudDone
+import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.InsertDriveFile
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,26 +23,31 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eddndev.purpura.R
-import com.eddndev.purpura.ui.compose.PurpuraScreen
+import com.eddndev.purpura.ui.compose.BrandIconBadge
+import com.eddndev.purpura.ui.compose.HeroActionScreen
+import com.eddndev.purpura.ui.compose.LoadingButton
 import com.eddndev.purpura.ui.theme.Pill
 import com.eddndev.purpura.ui.theme.Spacing
 
 /**
- * Respaldo (REQ-BACKUP-001) en Compose. Pantalla de accion centrada bajo [PurpuraScreen] (app bar con
- * flecha atras): icono en pastilla, titulo/cuerpo y dos acciones jerarquizadas full-width: "Respaldar
- * en Google Drive" (Button primario pill) y "Guardar en un archivo" (OutlinedButton pill, secundaria).
- * El spinner aparece mientras [BackupUiState.isWorking]. La logica vive en [BackupViewModel]; esta
- * pantalla solo recibe estado y callbacks. La autorizacion de Drive y el selector de archivo (SAF) los
- * resuelve el Fragment; aqui solo se disparan [onBackupToDrive] y [onBackupToFile].
+ * Respaldo (REQ-BACKUP-001) en Compose. Reusa el shell [HeroActionScreen] (hero + titulo + cuerpo +
+ * extra + acciones) para compartir ritmo al pixel con Restaurar y evitar re-implementar el centrado.
+ * Dos acciones jerarquizadas full-width: "Respaldar en Google Drive" (primaria con progreso en linea)
+ * y "Guardar en un archivo" (OutlinedButton, secundaria). La autorizacion de Drive y el selector de
+ * archivo (SAF) los resuelve el Fragment; aqui solo se disparan [onBackupToDrive] y [onBackupToFile].
  *
- * Los avisos de un solo uso (savedCount / infoRes / errorRes) se muestran como snackbar via
- * [LaunchedEffect] y se confirman con [onMessageShown] (= messageShown del VM).
+ * Avisos transitorios (infoRes / errorRes) van por snackbar y se confirman con [onMessageShown]. El
+ * EXITO no usa snackbar: se conserva como confirmacion en linea (savedCount, en el slot extra) para
+ * que el usuario lo vea sin que desaparezca solo.
  */
 @Composable
 fun BackupScreen(
@@ -59,15 +60,7 @@ fun BackupScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Resultado con plural: "%d evento(s) respaldado(s)". Se resuelve en scope composable.
-    state.savedCount?.let { count ->
-        val message = pluralStringResource(R.plurals.backup_result, count, count)
-        LaunchedEffect(count, message) {
-            snackbarHostState.showSnackbar(message)
-            onMessageShown()
-        }
-    }
-    // Aviso informativo (p. ej. respaldo vacio).
+    // Aviso informativo (respaldo vacio): transitorio, via snackbar.
     state.infoRes?.let { messageRes ->
         val message = stringResource(messageRes)
         LaunchedEffect(messageRes, message) {
@@ -75,7 +68,7 @@ fun BackupScreen(
             onMessageShown()
         }
     }
-    // Error (E/S al guardar, Drive sin autorizar, etc.).
+    // Error (E/S al guardar, Drive sin autorizar, etc.): transitorio, via snackbar.
     state.errorRes?.let { messageRes ->
         val message = stringResource(messageRes)
         LaunchedEffect(messageRes, message) {
@@ -84,71 +77,51 @@ fun BackupScreen(
         }
     }
 
-    // Titulo del app bar: reusa account_backup ("Respaldo") por rule 3 (no inventar strings).
-    PurpuraScreen(
-        title = stringResource(R.string.account_backup),
-        modifier = modifier,
-        onBack = onBack,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = Spacing.xxl),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            // Hero: icono dentro de un disco de marca (espeja a Restaurar) para alejar el "look de demo".
-            Box(
-                modifier = Modifier
-                    .size(96.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_cloud_upload),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(48.dp),
-                )
-            }
-            Spacer(Modifier.height(Spacing.xl))
-            Text(
-                text = stringResource(R.string.backup_title),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(Spacing.sm))
-            Text(
-                text = stringResource(R.string.backup_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
+    val working = state.isWorking
+    val progressLabel = stringResource(R.string.backup_in_progress)
 
-            Spacer(Modifier.height(Spacing.xxl))
-            // Accion primaria: respaldar en Drive (full width, pill).
-            Button(
-                onClick = onBackupToDrive,
-                enabled = !state.isWorking,
-                shape = Pill,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_cloud_upload),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(Modifier.size(Spacing.sm))
-                Text(stringResource(R.string.backup_action_drive))
+    // Titulo del app bar: reusa account_backup ("Respaldo") por rule (no inventar strings).
+    HeroActionScreen(
+        screenTitle = stringResource(R.string.account_backup),
+        onBack = onBack,
+        heroIcon = Icons.Outlined.CloudUpload,
+        title = stringResource(R.string.backup_title),
+        body = stringResource(R.string.backup_body),
+        modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        extra = {
+            // Confirmacion persistente bajo el cuerpo: en un resultado retenido (savedCount) mostramos
+            // un hero en tono de exito + conteo. Crossfade evita el "salto" al aparecer/desaparecer.
+            Crossfade(
+                targetState = state.savedCount,
+                animationSpec = tween(220),
+                label = "backupResult",
+            ) { count ->
+                if (count != null) {
+                    BackupSuccess(count = count, modifier = Modifier.padding(top = Spacing.xl))
+                }
             }
+        },
+        actions = {
+            // Accion primaria con progreso EN LINEA (sin spinner aparte que mueva el layout). El
+            // liveRegion anuncia el trabajo en curso a lectores de pantalla sin tapar la etiqueta.
+            LoadingButton(
+                onClick = onBackupToDrive,
+                text = stringResource(R.string.backup_action_drive),
+                isLoading = working,
+                leadingIcon = Icons.Outlined.CloudUpload,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics {
+                        liveRegion = LiveRegionMode.Polite
+                        if (working) stateDescription = progressLabel
+                    },
+            )
             Spacer(Modifier.height(Spacing.md))
-            // Accion secundaria: guardar en archivo (outline, full width, pill).
+            // Secundaria: solo deshabilitada mientras se trabaja (sin spinner propio).
             OutlinedButton(
                 onClick = onBackupToFile,
-                enabled = !state.isWorking,
+                enabled = !working,
                 shape = Pill,
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -160,13 +133,30 @@ fun BackupScreen(
                 Spacer(Modifier.size(Spacing.sm))
                 Text(stringResource(R.string.backup_action_file))
             }
-            // El spinner aparece/desaparece con una transicion suave mientras se trabaja.
-            AnimatedVisibility(visible = state.isWorking) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Spacer(Modifier.height(Spacing.xl))
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
+        },
+    )
+}
+
+// Confirmacion en linea: hero en tono de exito (tertiaryContainer, dentro de la marca mono-purpura,
+// sin color dinamico) + conteo en labelLarge primario.
+@Composable
+private fun BackupSuccess(count: Int, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        BrandIconBadge(
+            icon = Icons.Outlined.CloudDone,
+            size = 56.dp,
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        )
+        Spacer(Modifier.height(Spacing.sm))
+        Text(
+            text = pluralStringResource(R.plurals.backup_result, count, count),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+        )
     }
 }

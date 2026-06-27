@@ -109,7 +109,7 @@ class ScreenSmokeTest {
         }
         CalendarScreen(
             state = CalendarUiState(yearMonth = YearMonth.now(), cells = cells, selectedDate = today, selectedDayEvents = listOf(sampleEvent()), isLoading = false, errorRes = null),
-            onSelectDate = {}, onPrevMonth = {}, onNextMonth = {}, onEventClick = {}, onErrorShown = {}, onShowHeatmap = {},
+            onSelectDate = {}, onPrevMonth = {}, onNextMonth = {}, onToday = {}, onAddEvent = {}, onEventClick = {}, onErrorShown = {}, onShowHeatmap = {},
         )
     }
 
