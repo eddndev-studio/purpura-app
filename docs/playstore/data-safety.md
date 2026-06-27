@@ -12,10 +12,12 @@ comportamiento real antes de enviar (Google audita y puede sancionar respuestas 
   1. **Dentro de la app** (IMPLEMENTADO): Cuenta > "Eliminar cuenta" > confirmacion > `DELETE
      /api/v1/account`. El backend borra el usuario y, por `ON DELETE CASCADE`, sus eventos y
      credencial; la app limpia la sesion y el cache local.
-  2. **Sin la app** (URL web): indicar en el formulario la URL publica de la politica de privacidad
-     como pagina de solicitud de eliminacion (seccion "Conservacion y eliminacion de la cuenta").
-  NOTA para PRODUCCION: Play exige AMBAS. La via in-app ya existe; falta unicamente HOSPEDAR la
-  politica en una URL publica y declararla en la seccion "Eliminacion de datos" de la Consola.
+  2. **Sin la app** (URL web): la politica + solicitud de eliminacion estan publicadas en
+     **https://purpura.eddn.dev/** (Cloudflare Worker; fuente en ../purpura-web/). Esa es la URL a
+     declarar como pagina de eliminacion de cuenta en la Consola.
+  NOTA para PRODUCCION: Play exige AMBAS y ambas ya existen. En Play Console > Politica > Seguridad de
+  los datos > "Eliminacion de datos", declarar la URL https://purpura.eddn.dev/ y marcar que la app
+  permite eliminar la cuenta. Misma URL como "Politica de privacidad" en la ficha.
 
 ## Tipos de datos recopilados
 
