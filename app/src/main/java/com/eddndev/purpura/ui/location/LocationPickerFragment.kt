@@ -10,7 +10,10 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.widget.PlaceAutocomplete
@@ -71,6 +75,7 @@ class LocationPickerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        applyEdgeToEdgeInsets()
         selected = readSelected(savedInstanceState)
         selectedLabel = savedInstanceState?.getString(KEY_SELECTED_LABEL)
 
@@ -87,6 +92,26 @@ class LocationPickerFragment : Fragment() {
         binding.searchBar.setOnClickListener { launchSearch() }
 
         binding.confirmButton.setOnClickListener { confirmSelection() }
+    }
+
+    // Edge-to-edge (la Activity es enableEdgeToEdge): el mapa ocupa toda la pantalla a proposito
+    // (tiles bajo la status/nav bar), pero la barra de busqueda flotante y el boton Confirmar deben
+    // respetar las barras del sistema o quedan tapados (la barra de busqueda se metia bajo la status
+    // bar). Sumamos el inset de cada barra al margen base de cada control.
+    private fun applyEdgeToEdgeInsets() {
+        val density = resources.displayMetrics.density
+        val searchBase = (SEARCH_BAR_MARGIN_DP * density).toInt()
+        val confirmBase = (CONFIRM_MARGIN_DP * density).toInt()
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.searchBar.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                topMargin = bars.top + searchBase
+            }
+            binding.confirmButton.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = bars.bottom + confirmBase
+            }
+            insets
+        }
     }
 
     // getMapAsync puede llamar de vuelta despues de que la vista ya no existe: hay que null-guardear.
@@ -108,13 +133,22 @@ class LocationPickerFragment : Fragment() {
 
     // Abre el widget de autocompletado. El session token agrupa las pulsaciones + la seleccion en una
     // sesion de facturacion; se cierra al pedir los detalles del lugar con el MISMO token.
+    //
+    // Sin filtro de tipos => devuelve TODO (negocios, puntos de interes y direcciones). Para que los
+    // NEGOCIOS cercanos salgan (y no solo direcciones), sesgamos la busqueda a lo que se ve en el mapa:
+    // locationBias = la region visible y origin = el centro, asi el ranking prioriza lo local. Si el
+    // mapa aun no esta listo, cae a una busqueda nacional (MX) sin sesgo.
     private fun launchSearch() {
         if (placesClient == null) return
         val token = AutocompleteSessionToken.newInstance()
         sessionToken = token
+        val visibleBounds = googleMap?.projection?.visibleRegion?.latLngBounds
+        val center = googleMap?.cameraPosition?.target
         val intent = PlaceAutocomplete.createIntent(requireContext()) {
             setAutocompleteSessionToken(token)
             setCountries(listOf("MX"))
+            visibleBounds?.let { setLocationBias(RectangularBounds.newInstance(it)) }
+            center?.let { setOrigin(it) }
         }
         autocompleteLauncher.launch(intent)
     }
@@ -246,6 +280,9 @@ class LocationPickerFragment : Fragment() {
         private const val KEY_SELECTED_LABEL = "selected_label"
         private const val DEFAULT_ZOOM = 10f
         private const val MARKER_ZOOM = 15f
+        // Margenes base (los del layout) a los que se suma el inset de la barra del sistema.
+        private const val SEARCH_BAR_MARGIN_DP = 12f
+        private const val CONFIRM_MARGIN_DP = 24f
         private val DEFAULT_CENTER = LatLng(19.4326, -99.1332) // CDMX
     }
 }
