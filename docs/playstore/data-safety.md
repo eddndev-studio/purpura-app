@@ -7,7 +7,11 @@ comportamiento real antes de enviar (Google audita y puede sancionar respuestas 
 
 - ¿La app recopila o comparte datos de usuario? **Si, recopila. No comparte con terceros.**
 - ¿Los datos se cifran en transito? **Si (HTTPS).**
-- ¿El usuario puede pedir que se eliminen sus datos? **Si (por correo; ver politica).**
+- ¿El usuario puede pedir que se eliminen sus datos? **Si.** En el formulario, indicar la URL publica
+  de la politica de privacidad como pagina de solicitud de eliminacion de cuenta (seccion
+  "Conservacion y eliminacion de la cuenta"). NOTA (pendiente de codigo): para PRODUCCION, Play exige
+  ademas una accion de "Eliminar cuenta" DENTRO de la app; ver el endpoint DELETE /account y la
+  pantalla pendientes en el roadmap. Para pruebas internas basta la URL de solicitud.
 
 ## Tipos de datos recopilados
 

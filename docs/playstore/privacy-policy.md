@@ -1,10 +1,6 @@
 # Politica de Privacidad - Purpura
 
-> BORRADOR. Play exige una URL PUBLICA a esta politica. Hospedarla (p. ej. GitHub Pages o
-> https://eddn.dev/purpura/privacy) y pegar la URL en la ficha de Store y en Data Safety.
-> Sustituir [FECHA] antes de publicar.
-
-Ultima actualizacion: [FECHA]
+Ultima actualizacion: 27 de junio de 2026
 
 Purpura ("la app") es un organizador de eventos desarrollado por eddndev. Esta politica explica que
 datos maneja la app y como.
@@ -16,9 +12,11 @@ datos maneja la app y como.
 - **Tus eventos.** La descripcion, tipo, estatus, fecha/hora, recordatorio, contacto y ubicacion que
   tu capturas en cada evento se sincronizan con tu cuenta a traves de nuestro servidor
   (api.purpura.eddn.dev) para que esten disponibles en tus dispositivos.
-- **Contactos (opcional).** Si eliges adjuntar un contacto a un evento, la app lee el nombre y, si lo
-  autorizas, el telefono del contacto que selecciones. Este acceso ocurre solo cuando tu abres el
-  selector de contactos; la app no lee toda tu agenda ni la sube en bloque.
+- **Contactos (opcional).** Si eliges adjuntar un contacto a un evento, la app lee el nombre y el
+  telefono del contacto que selecciones. Ese nombre y telefono se guardan como parte del evento y, por
+  tanto, se transmiten a nuestro servidor (api.purpura.eddn.dev) y se incluyen en los archivos de
+  respaldo que generes en Google Drive. El acceso a contactos ocurre solo cuando tu abres el selector;
+  la app no lee toda tu agenda ni la sube en bloque.
 - **Ubicacion (opcional).** Si eliges una ubicacion para un evento, se guardan las coordenadas y una
   etiqueta del lugar. La app NO accede a la ubicacion en tiempo real del dispositivo (no solicita el
   permiso de ubicacion precisa); usas un mapa y una busqueda de lugares para elegir el punto.
@@ -40,10 +38,16 @@ gestionar los archivos de respaldo que ella misma crea. No accede al resto de tu
 Usamos tus datos unicamente para ofrecer la funcion de organizar y sincronizar tus eventos. No
 vendemos tus datos ni los usamos para publicidad. Los datos se transmiten cifrados (HTTPS).
 
-## Conservacion y eliminacion
+## Conservacion y eliminacion de la cuenta
 
 Tus eventos se conservan mientras tengas la cuenta. Al cerrar sesion se borran los datos locales del
-dispositivo. Para eliminar tu cuenta y tus datos del servidor, escribe a eddndev@gmail.com.
+dispositivo.
+
+**Como eliminar tu cuenta y todos tus datos.** Para solicitar la eliminacion permanente de tu cuenta
+y de todos los datos asociados (cuenta, eventos y su contenido) de nuestro servidor, envia una
+solicitud desde el correo de tu cuenta a **eddndev@gmail.com** con el asunto "Eliminar mi cuenta
+Purpura". Atenderemos la solicitud y eliminaremos los datos en un plazo maximo de 30 dias. Esta
+pagina es el punto publico de solicitud de eliminacion de cuenta (URL requerida por Google Play).
 
 ## Contacto
 
