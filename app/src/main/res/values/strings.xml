@@ -61,7 +61,7 @@
     <string name="placeholder_home">Aquí aparecerán tus eventos de hoy y los próximos 4 días.</string>
     <string name="home_empty_title">No tienes eventos próximos</string>
     <string name="home_section_upcoming">Próximos 5 días</string>
-    <string name="fab_add_event">Añadir Eventos</string>
+    <string name="fab_add_event">Añadir evento</string>
     <string name="placeholder_icon_desc">Ilustración de la pantalla</string>
     <string name="placeholder_add_event">Formulario para crear un evento (tipo, contacto, ubicación, fecha, hora, estatus, recordatorio).</string>
     <string name="placeholder_query">Consulta por día, rango, mes o año, con filtro por tipo.</string>
@@ -224,6 +224,12 @@
     <string name="restore_drive_pick_title">Elige un respaldo</string>
     <string name="restore_error_invalid_file">El archivo no es un respaldo válido de Purpura.</string>
     <string name="restore_result_summary">Restaurado: %1$d nuevos, %2$d actualizados, %3$d omitidos, %4$d con error</string>
+    <!-- Restaurar: confirmacion persistente en linea (tarjeta de resultado) -->
+    <string name="restore_result_title">Restauración completa</string>
+    <string name="restore_count_new">Nuevos</string>
+    <string name="restore_count_updated">Actualizados</string>
+    <string name="restore_count_skipped">Omitidos</string>
+    <string name="restore_count_failed">Con error</string>
 
     <!-- Anadir evento: formulario (REQ-ADD-001..009) -->
     <string name="add_event_description_label">Descripción</string>
@@ -276,4 +282,35 @@
 
     <!-- OAuth: client id Web (publico, no es secreto). Es el audience del idToken. -->
     <string name="server_client_id" translatable="false">192602671268-t21fn2svpmep9evedhac8i6t79e4nkqb.apps.googleusercontent.com</string>
+
+    <!-- ===== Rediseno Airbnb-level: strings de la fundacion (refs compartidas) ===== -->
+    <!-- Inicio: saludo por hora del dia, compuesto con la fecha como subtitulo del app bar. -->
+    <string name="home_greeting_morning">Buenos días</string>
+    <string name="home_greeting_afternoon">Buenas tardes</string>
+    <string name="home_greeting_evening">Buenas noches</string>
+    <string name="empty_create_event">Crear evento</string>
+
+    <!-- Navegacion de mes (Calendario / Mapa de calor) -->
+    <string name="action_today">Hoy</string>
+
+    <!-- Consultar: resultados y filtros -->
+    <string name="query_clear_filters">Limpiar filtros</string>
+    <string name="query_no_more_results">No hay más resultados</string>
+    <string name="query_filters">Filtros</string>
+    <string name="query_filters_apply">Ver resultados</string>
+    <plurals name="query_results_count">
+        <item quantity="one">%d resultado</item>
+        <item quantity="other">%d resultados</item>
+    </plurals>
+
+    <!-- Detalle: encabezado de grupo de datos -->
+    <string name="detail_section_details">Detalles</string>
+
+    <!-- Mensajes de progreso (liveRegion accesible) -->
+    <string name="backup_in_progress">Respaldando tus eventos…</string>
+    <string name="restore_in_progress">Restaurando tus eventos…</string>
+    <string name="detail_working">Procesando…</string>
+
+    <!-- Auth: proveedor Google (icono de marca) -->
+    <string name="auth_google_icon_desc">Logotipo de Google</string>
 </resources>
