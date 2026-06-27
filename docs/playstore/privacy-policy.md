@@ -43,11 +43,17 @@ vendemos tus datos ni los usamos para publicidad. Los datos se transmiten cifrad
 Tus eventos se conservan mientras tengas la cuenta. Al cerrar sesion se borran los datos locales del
 dispositivo.
 
-**Como eliminar tu cuenta y todos tus datos.** Para solicitar la eliminacion permanente de tu cuenta
-y de todos los datos asociados (cuenta, eventos y su contenido) de nuestro servidor, envia una
-solicitud desde el correo de tu cuenta a **eddndev@gmail.com** con el asunto "Eliminar mi cuenta
-Purpura". Atenderemos la solicitud y eliminaremos los datos en un plazo maximo de 30 dias. Esta
-pagina es el punto publico de solicitud de eliminacion de cuenta (URL requerida por Google Play).
+**Como eliminar tu cuenta y todos tus datos.** Puedes eliminar de forma permanente tu cuenta y todos
+los datos asociados (cuenta, eventos y su contenido) de nuestro servidor de dos maneras:
+
+- **Desde la app** (inmediato): abre **Cuenta > Eliminar cuenta** y confirma. La accion borra tu
+  cuenta y todos tus eventos del servidor al instante y cierra la sesion en el dispositivo. No se
+  puede deshacer.
+- **Sin la app** (por correo): envia una solicitud desde el correo de tu cuenta a **eddndev@gmail.com**
+  con el asunto "Eliminar mi cuenta Purpura". Atenderemos la solicitud y eliminaremos los datos en un
+  plazo maximo de 30 dias.
+
+Esta pagina es el punto publico de solicitud de eliminacion de cuenta (URL requerida por Google Play).
 
 ## Contacto
 
