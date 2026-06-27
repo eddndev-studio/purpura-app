@@ -29,9 +29,34 @@ class QueryViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
+    // El init ya carga la pagina 1: la PRIMERA entrada a RESUMED no debe re-consultar (ver onResumed).
+    private var initialLoadDone = false
+
     init {
         // Carga inicial sin filtros: muestra los eventos del usuario paginados por fecha.
         search(QueryFilters())
+    }
+
+    // Hot reload al volver al primer plano (integridad de datos). A diferencia de Inicio/Calendario
+    // (Flow del cache de Room, reactivos), aqui la lista es un SNAPSHOT imperativo contra la API: al
+    // volver del Detalle tras cambiar estatus, editar o borrar un evento, la pagina ya mostrada queda
+    // obsoleta. Por eso re-pedimos la pagina 1 con los filtros vigentes en CADA regreso a RESUMED.
+    // Esto dispara tambien en rotacion y en app background->foreground, no solo en Detalle->atras; es
+    // DELIBERADO: re-consultar en cada reanudado es INVARIANTE al ciclo de vida y garantiza datos
+    // correctos siempre (y respeta la pertenencia al filtro -- un evento que dejo de cumplir el
+    // estatus filtrado desaparece -- cosa que un overlay del cache no podria). Un simple flag "vengo
+    // del Detalle" parece mas fino pero reintroduce el bug: no sobrevive la recreacion por rotacion
+    // (si rotas ESTANDO en el Detalle, el VM persiste obsoleto pero el flag se pierde -> lista stale
+    // al volver). Compromiso aceptado en esta pantalla de consulta: esos reanudados reinician a la
+    // pagina 1 (se pierde el scroll y las paginas acumuladas con loadMore). Saltamos la PRIMERA
+    // entrada a RESUMED porque init ya cargo. search() conserva los resultados hasta tener los nuevos
+    // (solo enciende la barra de progreso), de modo que el refresco no parpadea ni vacia la lista.
+    fun onResumed() {
+        if (!initialLoadDone) {
+            initialLoadDone = true
+            return
+        }
+        search(_uiState.value.filters)
     }
 
     fun search(filters: QueryFilters) {

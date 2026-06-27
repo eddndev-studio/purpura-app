@@ -9,7 +9,10 @@ import androidx.compose.runtime.getValue
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.model.Event
@@ -18,6 +21,7 @@ import com.eddndev.purpura.ui.common.navigateToEventDetail
 import com.eddndev.purpura.ui.compose.purpuraComposeView
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -58,6 +62,16 @@ class QueryFragment : Fragment() {
         // Tras una recreacion, un selector huerfano no conserva sus listeners: lo descartamos para
         // que el usuario lo reabra desde el boton de fecha (ya re-sincronizado por el estado del VM).
         (parentFragmentManager.findFragmentByTag(PICKER_TAG) as? DialogFragment)?.dismiss()
+
+        // Re-consulta al regresar a primer plano para reflejar eventos cambiados/borrados en el
+        // Detalle (la lista es un snapshot imperativo, no un Flow del cache). El VM salta la primera
+        // entrada a RESUMED (init ya cargo) y conserva los resultados durante el refresco. La vista
+        // se recrea al volver del Detalle, asi que esto re-engancha en el nuevo viewLifecycleOwner.
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.onResumed()
+            }
+        }
     }
 
     // Abre el selector segun el modo. La fuente de verdad de los filtros es el VM: de ahi sembramos
