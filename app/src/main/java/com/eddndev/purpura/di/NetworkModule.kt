@@ -1,6 +1,7 @@
 package com.eddndev.purpura.di
 
 import com.eddndev.purpura.BuildConfig
+import com.eddndev.purpura.data.remote.api.AccountApi
 import com.eddndev.purpura.data.remote.api.AuthApi
 import com.eddndev.purpura.data.remote.api.EventApi
 import com.eddndev.purpura.data.remote.interceptor.AuthInterceptor
@@ -68,4 +69,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideAccountApi(retrofit: Retrofit): AccountApi = retrofit.create(AccountApi::class.java)
 }

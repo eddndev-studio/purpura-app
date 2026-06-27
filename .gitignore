@@ -24,3 +24,7 @@ Thumbs.db
 
 # CodeGraph local index
 .codegraph/
+
+# Capturas de Play (LOCALES): contienen datos personales aunque difuminados; el
+# repo es publico. Los assets de ficha tracked (icono/grafico) viven en docs/playstore/.
+docs/playstore/screenshots/

@@ -7,11 +7,15 @@ comportamiento real antes de enviar (Google audita y puede sancionar respuestas 
 
 - ¿La app recopila o comparte datos de usuario? **Si, recopila. No comparte con terceros.**
 - ¿Los datos se cifran en transito? **Si (HTTPS).**
-- ¿El usuario puede pedir que se eliminen sus datos? **Si.** En el formulario, indicar la URL publica
-  de la politica de privacidad como pagina de solicitud de eliminacion de cuenta (seccion
-  "Conservacion y eliminacion de la cuenta"). NOTA (pendiente de codigo): para PRODUCCION, Play exige
-  ademas una accion de "Eliminar cuenta" DENTRO de la app; ver el endpoint DELETE /account y la
-  pantalla pendientes en el roadmap. Para pruebas internas basta la URL de solicitud.
+- ¿El usuario puede pedir que se eliminen sus datos? **Si.** Dos vias, ambas eliminan la cuenta y
+  TODOS sus datos del servidor de forma permanente:
+  1. **Dentro de la app** (IMPLEMENTADO): Cuenta > "Eliminar cuenta" > confirmacion > `DELETE
+     /api/v1/account`. El backend borra el usuario y, por `ON DELETE CASCADE`, sus eventos y
+     credencial; la app limpia la sesion y el cache local.
+  2. **Sin la app** (URL web): indicar en el formulario la URL publica de la politica de privacidad
+     como pagina de solicitud de eliminacion (seccion "Conservacion y eliminacion de la cuenta").
+  NOTA para PRODUCCION: Play exige AMBAS. La via in-app ya existe; falta unicamente HOSPEDAR la
+  politica en una URL publica y declararla en la seccion "Eliminacion de datos" de la Consola.
 
 ## Tipos de datos recopilados
 
