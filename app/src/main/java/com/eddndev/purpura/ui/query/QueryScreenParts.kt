@@ -6,28 +6,35 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eddndev.purpura.R
 import com.eddndev.purpura.domain.model.EventStatus
 import com.eddndev.purpura.domain.model.EventType
 import com.eddndev.purpura.domain.model.QueryMode
 import com.eddndev.purpura.ui.common.EventDisplay
+import com.eddndev.purpura.ui.compose.PurpuraFilterChip
 import com.eddndev.purpura.ui.compose.SectionHeader
 import com.eddndev.purpura.ui.theme.Pill
 import com.eddndev.purpura.ui.theme.Spacing
@@ -35,10 +42,10 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * Bloque de filtros de Consultar: secciones Periodo / Tipo / Estatus con [SectionHeader] y chips que
- * reflujan en [FlowRow] (en vez de scroll horizontal, para verlos todos). El boton de fecha aparece
- * integrado bajo Periodo solo con un modo temporal activo. La logica de filtros/paginacion no cambia:
- * se construye un [QueryFilters] y se llama a onSearch, o se delega la fecha al Fragment via onPickDate.
+ * Bloque de filtros de Consultar: secciones Periodo / Tipo / Estatus con [SectionHeader] y chips de
+ * marca ([PurpuraFilterChip]) que reflujan en [FlowRow]. Vive dentro de la hoja "Filtros". El boton
+ * de fecha aparece bajo Periodo solo con un modo temporal activo. La logica no cambia: se construye un
+ * [QueryFilters] y se llama a onSearch, o se delega la fecha al Fragment via onPickDate.
  */
 // FlowRowScope (receiver de las lambdas de chips) es experimental: el opt-in cubre el sitio de
 // construccion ademas de FilterSection donde se consume.
@@ -52,12 +59,13 @@ internal fun QueryFilterBar(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Spacing.lg),
+        // Separacion entre secciones; el gap encabezado->chips lo posee el 8dp de SectionHeader.
+        verticalArrangement = Arrangement.spacedBy(Spacing.section),
     ) {
         // Periodo: al elegir un modo temporal se delega en el Fragment (onPickDate); "Todos" limpia
         // las fechas y dispara la busqueda de inmediato.
         FilterSection(stringResource(R.string.query_period_label)) {
-            FilterChipPill(
+            PurpuraFilterChip(
                 selected = filters.mode == null,
                 onClick = { onSearch(QueryFilters(type = filters.type, status = filters.status)) },
                 label = stringResource(R.string.filter_all),
@@ -92,7 +100,7 @@ internal fun QueryFilterBar(
 
         // Tipo: preserva el modo/fechas actuales y aplica de inmediato.
         FilterSection(stringResource(R.string.query_type_label)) {
-            FilterChipPill(
+            PurpuraFilterChip(
                 selected = filters.type == null,
                 onClick = { onSearch(filters.copy(type = null)) },
                 label = stringResource(R.string.filter_all),
@@ -106,7 +114,7 @@ internal fun QueryFilterBar(
 
         // Estatus: preserva el modo/fechas actuales y aplica de inmediato.
         FilterSection(stringResource(R.string.query_status_label)) {
-            FilterChipPill(
+            PurpuraFilterChip(
                 selected = filters.status == null,
                 onClick = { onSearch(filters.copy(status = null)) },
                 label = stringResource(R.string.filter_all),
@@ -118,16 +126,21 @@ internal fun QueryFilterBar(
     }
 }
 
-// Encabezado de seccion + chips que reflujan. Centraliza el espaciado para las tres secciones.
+// Encabezado de seccion + chips que reflujan. El gap encabezado->chips lo posee el 8dp inferior de
+// SectionHeader (no agregamos spacedBy en esta Column).
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FilterSection(
     title: String,
     chips: @Composable FlowRowScope.() -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+    Column {
         SectionHeader(text = title)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), content = chips)
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+            content = chips,
+        )
     }
 }
 
@@ -138,7 +151,7 @@ private fun ModeChip(
     filters: QueryFilters,
     onPickDate: (QueryMode) -> Unit,
 ) {
-    FilterChipPill(
+    PurpuraFilterChip(
         selected = filters.mode == mode,
         // Cambiar de modo no busca aun: necesita fecha. El Fragment abre el selector y al elegir
         // vuelve a llamar a la busqueda con el filtro completo.
@@ -153,7 +166,7 @@ private fun TypeChip(
     filters: QueryFilters,
     onSearch: (QueryFilters) -> Unit,
 ) {
-    FilterChipPill(
+    PurpuraFilterChip(
         selected = filters.type == type,
         onClick = { onSearch(filters.copy(type = type)) },
         label = stringResource(EventDisplay.typeLabel(type)),
@@ -166,30 +179,93 @@ private fun StatusChip(
     filters: QueryFilters,
     onSearch: (QueryFilters) -> Unit,
 ) {
-    FilterChipPill(
+    PurpuraFilterChip(
         selected = filters.status == status,
         onClick = { onSearch(filters.copy(status = status)) },
         label = stringResource(EventDisplay.statusLabel(status)),
     )
 }
 
+/**
+ * Resumen de filtros activos fijado arriba de la lista de resultados: un chip por filtro (periodo /
+ * tipo / estatus). Tocar cualquiera reabre la hoja "Filtros" para ajustarlos.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun FilterChipPill(
-    selected: Boolean,
+internal fun ActiveFiltersRow(
+    filters: QueryFilters,
     onClick: () -> Unit,
-    label: String,
+    modifier: Modifier = Modifier,
 ) {
-    // El borde por defecto de FilterChip se conserva (evitamos filterChipBorder, cuya firma cambia
-    // entre versiones de Material3); solo forzamos la forma pill como en el resto de la app.
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(label) },
-        shape = Pill,
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        if (filters.mode != null) {
+            PurpuraFilterChip(selected = true, onClick = onClick, label = dateButtonLabel(filters))
+        }
+        filters.type?.let { type ->
+            PurpuraFilterChip(
+                selected = true,
+                onClick = onClick,
+                label = stringResource(EventDisplay.typeLabel(type)),
+            )
+        }
+        filters.status?.let { status ->
+            PurpuraFilterChip(
+                selected = true,
+                onClick = onClick,
+                label = stringResource(EventDisplay.statusLabel(status)),
+            )
+        }
+    }
+}
+
+// Encabezado de la lista de resultados con el conteo (plural) como slot trailing.
+@Composable
+internal fun ResultsHeader(count: Int, modifier: Modifier = Modifier) {
+    SectionHeader(
+        text = stringResource(R.string.query_results_desc),
+        modifier = modifier,
+        trailing = {
+            Text(
+                text = pluralStringResource(R.plurals.query_results_count, count, count),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
     )
 }
 
-// Etiqueta del boton de fecha a partir de los filtros (las fechas elegidas viven en el estado).
+// Cierre de la lista cuando ya no quedan paginas que traer.
+@Composable
+internal fun NoMoreResults(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.query_no_more_results),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = Spacing.lg),
+    )
+}
+
+// Spinner de pie mientras se trae la siguiente pagina.
+@Composable
+internal fun PagingSpinner(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(Spacing.lg),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+    }
+}
+
+// Etiqueta del boton/chip de fecha a partir de los filtros (las fechas elegidas viven en el estado).
 @Composable
 private fun dateButtonLabel(filters: QueryFilters): String = when (filters.mode) {
     QueryMode.por_dia -> filters.date?.let(DATE_LABEL::format)

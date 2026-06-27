@@ -2,18 +2,17 @@ package com.eddndev.purpura.ui.auth
 
 import android.util.Patterns
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -21,20 +20,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,27 +42,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eddndev.purpura.R
+import com.eddndev.purpura.ui.compose.LoadingButton
 import com.eddndev.purpura.ui.theme.Pill
 import com.eddndev.purpura.ui.theme.Spacing
 import kotlinx.coroutines.launch
 
 /**
  * Autenticacion (06-app-architecture §13.1) en Compose: formulario centrado de inicio de sesion /
- * registro con correo y contrasena, o Google Sign-In. SIN chrome (sin TopAppBar): es la puerta de
- * entrada, no una pantalla del bottom nav. El modo login/registro vive en estado local
- * (rememberSaveable); el campo Nombre solo aparece en registro. submit valida campos no vacios y
- * formato de correo antes de delegar en [onLogin] / [onRegister]. Los errores del ViewModel y la
- * validacion local se muestran como snackbar; el formato de correo se marca inline en el campo.
- * Esta pantalla NO navega: al persistir la sesion, MainActivity navega a Inicio.
+ * registro con correo y contrasena, o Google Sign-In. SIN chrome (Scaffold propio sin TopAppBar): es
+ * la puerta de entrada, no una pantalla del bottom nav, por eso NO usa PurpuraScreen. El modo
+ * login/registro vive en estado local (rememberSaveable); el campo Nombre solo aparece en registro.
+ * submit valida campos no vacios y formato de correo antes de delegar en [onLogin] / [onRegister]. Los
+ * errores del ViewModel y la validacion local se muestran como snackbar; el formato de correo se marca
+ * inline en el campo. Esta pantalla NO navega: al persistir la sesion, MainActivity navega a Inicio.
  */
 @Composable
 fun AuthScreen(
@@ -144,10 +137,14 @@ fun AuthScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             AuthBranding()
-            Spacer(Modifier.height(Spacing.xl))
+            // Branding -> formulario: salto de seccion para separar marca de la tarea (Spacing.section).
+            Spacer(Modifier.height(Spacing.section))
 
-            // Campo Nombre: visible solo en modo registro (motion de aparicion suave).
-            AnimatedVisibility(visible = isRegister) {
+            // Campo Nombre: aparece solo en registro con revelado suave (expand + fade, 200ms).
+            AnimatedVisibility(
+                visible = isRegister,
+                enter = expandVertically(tween(200)) + fadeIn(tween(200)),
+            ) {
                 Column {
                     OutlinedTextField(
                         value = name,
@@ -174,11 +171,10 @@ fun AuthScreen(
                 enabled = !loading,
                 isError = emailError,
                 shape = Pill,
-                // Pista inline solo cuando el correo escrito no tiene formato valido.
-                supportingText = if (emailError) {
-                    { Text(invalidEmailMessage) }
-                } else {
-                    null
+                // Slot de soporte SIEMPRE presente (reserva una linea) para que el campo no salte
+                // al aparecer/desaparecer la pista de correo invalido.
+                supportingText = {
+                    Text(if (emailError) invalidEmailMessage else "")
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
@@ -223,110 +219,30 @@ fun AuthScreen(
             )
             Spacer(Modifier.height(Spacing.lg))
 
-            // Boton principal: Iniciar sesion / Registrar segun el modo.
-            Button(
+            // CTA primario: progreso EN LINEA via LoadingButton (sin spinner separado que mueva el
+            // layout). Alto >= 56dp y ancho completo para anclar la jerarquia de la pantalla.
+            LoadingButton(
                 onClick = { submit() },
+                text = stringResource(if (isRegister) R.string.auth_register else R.string.auth_login),
+                isLoading = loading,
                 enabled = !loading,
-                shape = Pill,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(if (isRegister) R.string.auth_register else R.string.auth_login))
-            }
-
-            // Alterna login/registro (igual que toggleMode del Fragment original).
-            TextButton(
-                onClick = { isRegister = !isRegister },
-                enabled = !loading,
-                shape = Pill,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    stringResource(
-                        if (isRegister) R.string.auth_toggle_to_login else R.string.auth_toggle_to_register,
-                    ),
-                )
-            }
-
-            Spacer(Modifier.height(Spacing.md))
-            AuthDivider()
-            Spacer(Modifier.height(Spacing.md))
-
-            // Boton de Google (outline). Lanza el intent via callback del Fragment.
-            // Nota: sin glifo de marca en res/drawable; usamos solo texto para no mostrar un
-            // icono enganoso (ver risks: falta ic_google de la fundacion).
-            OutlinedButton(
-                onClick = onGoogleClick,
-                enabled = !loading,
-                shape = Pill,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(R.string.auth_google))
-            }
-
-            // Spinner mientras se autentica (motion entre formulario y carga); reserva alto fijo
-            // para evitar que el contenido salte al aparecer/desaparecer.
-            AnimatedVisibility(visible = loading) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = Spacing.xxl),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Spacer(Modifier.height(Spacing.lg))
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
-    }
-}
-
-/** Branding centrado: icono de calendario en pastilla primaria + titulo y subtitulo de marca. */
-@Composable
-private fun AuthBranding() {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(88.dp)
-                .background(MaterialTheme.colorScheme.primaryContainer, Pill),
-            contentAlignment = Alignment.Center,
-        ) {
-            // Marca decorativa: el titulo "Bienvenido a Purpura" debajo ya describe la pantalla,
-            // asi que el icono no necesita contentDescription (igual que los iconos del exemplar).
-            Icon(
-                painter = painterResource(R.drawable.ic_calendar_month),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp),
             )
-        }
-        Spacer(Modifier.height(Spacing.lg))
-        Text(
-            text = stringResource(R.string.title_auth),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(Spacing.xs))
-        Text(
-            text = stringResource(R.string.auth_subtitle),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-    }
-}
 
-/** Divisor "o" real: dos lineas con la etiqueta centrada (separa el formulario de Google). */
-@Composable
-private fun AuthDivider() {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        HorizontalDivider(modifier = Modifier.weight(1f))
-        Text(
-            text = stringResource(R.string.auth_or),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = Spacing.md),
-        )
-        HorizontalDivider(modifier = Modifier.weight(1f))
+            // Toggle login/registro demotado a fila inline (jerarquia bajo el CTA).
+            AuthModeToggle(
+                isRegister = isRegister,
+                enabled = !loading,
+                onToggle = { isRegister = !isRegister },
+            )
+
+            Spacer(Modifier.height(Spacing.lg))
+            AuthDivider()
+            Spacer(Modifier.height(Spacing.lg))
+
+            AuthGoogleButton(onClick = onGoogleClick, enabled = !loading)
+        }
     }
 }

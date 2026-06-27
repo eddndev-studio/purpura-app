@@ -43,7 +43,8 @@ class BackupViewModel @Inject constructor(
 
     fun prepareBackup() {
         if (_uiState.value.isWorking) return
-        _uiState.update { it.copy(isWorking = true, errorRes = null, infoRes = null) }
+        // Limpia la confirmacion anterior al iniciar: la nueva corrida define el proximo savedCount.
+        _uiState.update { it.copy(isWorking = true, errorRes = null, infoRes = null, savedCount = null) }
         viewModelScope.launch {
             runCatching { exportEvents() }
                 .onSuccess { document ->
@@ -92,7 +93,8 @@ class BackupViewModel @Inject constructor(
     // DriveNotAuthorizedException y se muestra el aviso correspondiente.
     fun backupToDrive() {
         if (_uiState.value.isWorking) return
-        _uiState.update { it.copy(isWorking = true, errorRes = null, infoRes = null) }
+        // Limpia la confirmacion anterior al iniciar: la nueva corrida define el proximo savedCount.
+        _uiState.update { it.copy(isWorking = true, errorRes = null, infoRes = null, savedCount = null) }
         viewModelScope.launch {
             runCatching {
                 val document = exportEvents()
@@ -127,8 +129,10 @@ class BackupViewModel @Inject constructor(
         _uiState.update { it.copy(isWorking = false) }
     }
 
+    // Solo confirma avisos transitorios (info/error del snackbar). savedCount NO se limpia aqui: la
+    // confirmacion de exito se muestra en linea y debe persistir hasta el proximo respaldo.
     fun messageShown() {
-        _uiState.update { it.copy(savedCount = null, infoRes = null, errorRes = null) }
+        _uiState.update { it.copy(infoRes = null, errorRes = null) }
     }
 
     // Nombre sugerido en el selector: fecha ISO (ASCII) + .json. El usuario puede cambiarlo.

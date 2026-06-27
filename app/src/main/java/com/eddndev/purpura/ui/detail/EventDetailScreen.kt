@@ -1,31 +1,17 @@
 package com.eddndev.purpura.ui.detail
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -40,33 +26,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.semantics
 import com.eddndev.purpura.R
-import com.eddndev.purpura.domain.model.Event
 import com.eddndev.purpura.domain.model.EventStatus
-import com.eddndev.purpura.ui.common.EventDisplay
+import com.eddndev.purpura.ui.compose.DetailSkeleton
 import com.eddndev.purpura.ui.compose.ErrorState
-import com.eddndev.purpura.ui.compose.EventStatusBadge
-import com.eddndev.purpura.ui.compose.EventTypeBadge
-import com.eddndev.purpura.ui.compose.InfoRow
-import com.eddndev.purpura.ui.compose.LoadingState
-import com.eddndev.purpura.ui.compose.MapCard
 import com.eddndev.purpura.ui.compose.PurpuraScreen
-import com.eddndev.purpura.ui.compose.SectionHeader
-import com.eddndev.purpura.ui.compose.SegmentedToggle
-import com.eddndev.purpura.ui.theme.Pill
-import com.eddndev.purpura.ui.theme.Spacing
 
 /**
- * Detalle de un evento (REQ-QUERY-007..013) en Compose, sobre [PurpuraScreen] con flecha atras y
- * accion de editar en el app bar. Cabecera con fecha completa, hora destacada y badges; secciones de
- * info (contacto, ubicacion, recordatorio) con [InfoRow] y un [MapCard] pulido cuando hay coordenadas;
- * el estatus se cambia con un [SegmentedToggle]. Acciones al pie: editar (primario) y eliminar (peligro)
- * con confirmacion. El fallo de carga usa [ErrorState] con reintentar; el error sobre un evento ya
- * visible es un aviso de un solo uso (snackbar). La navegacion vive en el Fragment via callbacks.
+ * Detalle de un evento (REQ-QUERY-007..013) en Compose, sobre [PurpuraScreen] con flecha atras. La
+ * cabecera lidera con la identidad (descripcion como titular, fecha y hora); las filas de info viven
+ * agrupadas en una InfoCard bajo la seccion "Detalles", con un [com.eddndev.purpura.ui.compose.MapCard]
+ * hero cuando hay coordenadas. El estatus se cambia con un SegmentedToggle. Las acciones primarias
+ * (Editar / Eliminar) se anclan al pie via el slot bottomBar, no flotan en la cabecera.
  *
- * [onOpenMap] dispara la affordance "Abrir en Maps" del [MapCard] (spec §7); la pantalla es pura, asi
- * que el Intent lo resuelve el Fragment. Si es null, el boton no se muestra (sin coordenadas o sin
- * cableado todavia).
+ * Trabajo en vuelo (cambio de estatus / borrado): una barra de progreso lineal a ras del app bar, en
+ * vez de un spinner flotante; las acciones afectadas quedan bloqueadas mientras tanto. La carga inicial
+ * usa el esqueleto del Detalle (no un spinner centrado); el fallo de carga usa [ErrorState] con
+ * reintentar y el error sobre un evento ya visible es un aviso de un solo uso (snackbar).
+ *
+ * [onOpenMap] dispara la affordance "Abrir en Maps" del MapCard (spec §7); la pantalla es pura, asi que
+ * el Intent lo resuelve el Fragment.
  */
 @Composable
 fun EventDetailScreen(
@@ -82,6 +65,7 @@ fun EventDetailScreen(
     onOpenMap: (() -> Unit)? = null,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Senal de un solo uso: al borrarse, el Fragment regresa atras.
     LaunchedEffect(state.deleted) {
@@ -107,15 +91,14 @@ fun EventDetailScreen(
         modifier = modifier,
         onBack = onBack,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        actions = {
-            // Editar solo tiene sentido sobre un evento ya cargado; se bloquea mientras hay trabajo.
-            if (state.event != null) {
-                IconButton(onClick = onEdit, enabled = !state.isWorking) {
-                    Icon(
-                        imageVector = Icons.Outlined.Edit,
-                        contentDescription = stringResource(R.string.detail_edit),
-                    )
-                }
+        // Acciones primarias ancladas al pie solo cuando hay un evento cargado.
+        bottomBar = state.event?.let {
+            {
+                DetailBottomBar(
+                    working = state.isWorking,
+                    onEdit = onEdit,
+                    onDeleteRequest = { showDeleteDialog = true },
+                )
             }
         },
     ) { innerPadding ->
@@ -128,12 +111,10 @@ fun EventDetailScreen(
                             event = event,
                             working = state.isWorking,
                             onChangeStatus = onChangeStatus,
-                            onEdit = onEdit,
-                            onDelete = onDelete,
                             onOpenMap = onOpenMap,
                         )
                     }
-                    DetailPhase.Loading -> LoadingState()
+                    DetailPhase.Loading -> DetailSkeleton()
                     DetailPhase.Error -> ErrorState(
                         icon = Icons.Outlined.ErrorOutline,
                         message = stringResource(R.string.detail_load_error_title),
@@ -143,16 +124,32 @@ fun EventDetailScreen(
                 }
             }
 
-            // Indicador de trabajo en vuelo (cambio de estatus / borrado) sin tapar el contenido.
+            // Trabajo en vuelo (cambio de estatus / borrado): barra lineal a ras del app bar, sin tapar
+            // el contenido. liveRegion Polite para que el lector de pantalla anuncie el procesamiento.
             if (state.isWorking) {
-                CircularProgressIndicator(
+                val workingDesc = stringResource(R.string.detail_working)
+                LinearProgressIndicator(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = Spacing.sm),
+                        .fillMaxWidth()
+                        .semantics {
+                            liveRegion = LiveRegionMode.Polite
+                            contentDescription = workingDesc
+                        },
                 )
             }
         }
+    }
+
+    if (showDeleteDialog) {
+        DeleteConfirmDialog(
+            onConfirm = {
+                showDeleteDialog = false
+                onDelete()
+            },
+            onDismiss = { showDeleteDialog = false },
+        )
     }
 }
 
@@ -166,180 +163,27 @@ private fun detailPhase(state: DetailUiState): DetailPhase = when {
 }
 
 @Composable
-private fun DetailContent(
-    event: Event,
-    working: Boolean,
-    onChangeStatus: (EventStatus) -> Unit,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit,
-    onOpenMap: (() -> Unit)?,
+private fun DeleteConfirmDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
-    var showDeleteDialog by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = Spacing.screenH)
-            .padding(bottom = Spacing.xl),
-    ) {
-        DetailHeader(event)
-
-        Spacer(Modifier.height(Spacing.section))
-        DetailInfo(event, onOpenMap)
-
-        Spacer(Modifier.height(Spacing.section))
-        StatusSection(current = event.status, working = working, onChangeStatus = onChangeStatus)
-
-        Spacer(Modifier.height(Spacing.section))
-        DetailActions(
-            working = working,
-            onEdit = onEdit,
-            onDeleteRequest = { showDeleteDialog = true },
-        )
-    }
-
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            icon = { Icon(Icons.Outlined.DeleteOutline, contentDescription = null) },
-            title = { Text(stringResource(R.string.detail_delete_confirm_title)) },
-            text = { Text(stringResource(R.string.detail_delete_confirm_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteDialog = false
-                        onDelete()
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error,
-                    ),
-                ) { Text(stringResource(R.string.detail_delete_confirm)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text(stringResource(R.string.detail_delete_cancel))
-                }
-            },
-        )
-    }
-}
-
-@Composable
-private fun DetailHeader(event: Event) {
-    Column {
-        Text(
-            text = EventDisplay.formatFullDate(event.startsAt),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(Spacing.xxs))
-        // Hora destacada: numero grande en primary (jerarquia del spec §4).
-        Text(
-            text = EventDisplay.formatTime(event.startsAt),
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.height(Spacing.sm))
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-            EventTypeBadge(event.type)
-            EventStatusBadge(event.status)
-        }
-        Spacer(Modifier.height(Spacing.md))
-        Text(
-            text = event.description,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-    }
-}
-
-@Composable
-private fun DetailInfo(event: Event, onOpenMap: (() -> Unit)?) {
-    val locationLabel = event.location.label?.takeIf { it.isNotBlank() }
-    val hasCoordinates = event.location.lat != 0.0 || event.location.lng != 0.0
-
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.item)) {
-        InfoRow(
-            icon = Icons.Outlined.Person,
-            label = stringResource(R.string.detail_contact_label),
-            value = event.contact.name,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        InfoRow(
-            icon = Icons.Outlined.Place,
-            label = stringResource(R.string.detail_location_label),
-            value = locationLabel
-                ?: if (hasCoordinates) stringResource(R.string.event_location_on_map)
-                else stringResource(R.string.detail_no_location),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        // El mapa pulido reemplaza el look crudo: solo cuando hay coordenadas reales. La affordance
-        // "Abrir en Maps" (spec §7) aparece solo si el Fragment cableo onOpenMap.
-        if (hasCoordinates) {
-            MapCard(
-                lat = event.location.lat,
-                lng = event.location.lng,
-                label = locationLabel,
-                onOpenExternal = onOpenMap,
-            )
-        }
-        InfoRow(
-            icon = Icons.Outlined.Notifications,
-            label = stringResource(R.string.detail_reminder_label),
-            value = stringResource(EventDisplay.reminderLabel(event.reminder)),
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
-}
-
-@Composable
-private fun StatusSection(
-    current: EventStatus,
-    working: Boolean,
-    onChangeStatus: (EventStatus) -> Unit,
-) {
-    // labelOf de SegmentedToggle no es @Composable: resolvemos las etiquetas antes (stringResource
-    // es valido aqui, dentro del cuerpo composable).
-    val labels = EventStatus.entries.associateWith { stringResource(EventDisplay.statusLabel(it)) }
-    SectionHeader(stringResource(R.string.detail_status_label))
-    SegmentedToggle(
-        options = EventStatus.entries,
-        selected = current,
-        // Evita disparos durante un cambio en vuelo o re-seleccionar el mismo estatus.
-        onSelect = { if (!working && it != current) onChangeStatus(it) },
-        labelOf = { labels.getValue(it) },
-        modifier = Modifier.fillMaxWidth(),
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Outlined.DeleteOutline, contentDescription = null) },
+        title = { Text(stringResource(R.string.detail_delete_confirm_title)) },
+        text = { Text(stringResource(R.string.detail_delete_confirm_message)) },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
+            ) { Text(stringResource(R.string.detail_delete_confirm)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.detail_delete_cancel))
+            }
+        },
     )
-}
-
-@Composable
-private fun DetailActions(
-    working: Boolean,
-    onEdit: () -> Unit,
-    onDeleteRequest: () -> Unit,
-) {
-    Button(
-        onClick = onEdit,
-        enabled = !working,
-        shape = Pill,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Icon(Icons.Outlined.Edit, contentDescription = null)
-        Spacer(Modifier.size(Spacing.sm))
-        Text(stringResource(R.string.detail_edit))
-    }
-    Spacer(Modifier.height(Spacing.sm))
-    // Eliminar en estilo de peligro: TextButton en color error, jerarquia secundaria.
-    TextButton(
-        onClick = onDeleteRequest,
-        enabled = !working,
-        shape = Pill,
-        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Icon(Icons.Outlined.DeleteOutline, contentDescription = null)
-        Spacer(Modifier.size(Spacing.sm))
-        Text(stringResource(R.string.detail_delete))
-    }
 }
