@@ -34,6 +34,7 @@ object TestData {
         nombre = "Ana",
         authProvider = AuthProvider.password,
         googleLinked = false,
+        emailVerified = false,
         createdAt = Instant.EPOCH,
     )
 
@@ -168,6 +169,13 @@ class FakeAuthRepository : AuthRepository {
     var unlinkGoogleError: Throwable? = null
     var unlinkGoogleCalls = 0
 
+    // GET /auth/me y POST verify-email/request: resultado/errores configurables y conteo de llamadas.
+    var meResult: User = TestData.user
+    var meError: Throwable? = null
+    var meCalls = 0
+    var requestVerificationError: Throwable? = null
+    var requestVerificationCalls = 0
+
     override suspend fun register(email: String, nombre: String, password: String): AuthResult =
         requireNotNull(loginResult) { "loginResult no configurado" }
 
@@ -195,6 +203,17 @@ class FakeAuthRepository : AuthRepository {
         unlinkGoogleCalls++
         unlinkGoogleError?.let { throw it }
         return unlinkGoogleResult
+    }
+
+    override suspend fun me(): User {
+        meCalls++
+        meError?.let { throw it }
+        return meResult
+    }
+
+    override suspend fun requestEmailVerification() {
+        requestVerificationCalls++
+        requestVerificationError?.let { throw it }
     }
 }
 

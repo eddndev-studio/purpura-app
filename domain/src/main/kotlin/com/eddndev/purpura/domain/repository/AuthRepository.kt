@@ -24,4 +24,14 @@ interface AuthRepository {
     // el usuario actualizado (googleLinked=false). Si la cuenta no tiene contrasena (quedaria sin
     // forma de entrar) -> CannotUnlinkGoogle.
     suspend fun unlinkGoogle(): User
+
+    // Devuelve el usuario autenticado fresco del backend (GET /auth/me). Sirve para refrescar
+    // emailVerified/nombre tras confirmar el correo en el navegador, sin re-loguear. El refresco de
+    // la sesion local (conservando el token) lo hace el caso de uso via SessionRepository.
+    suspend fun me(): User
+
+    // Pide al backend que envie un correo de verificacion al usuario autenticado
+    // (POST /auth/verify-email/request). Idempotente: si ya esta verificado, el backend no envia nada
+    // (202 igual). No cambia la sesion.
+    suspend fun requestEmailVerification()
 }

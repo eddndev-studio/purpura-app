@@ -7,6 +7,8 @@ import com.eddndev.purpura.domain.support.TestData
 import com.eddndev.purpura.domain.usecase.auth.LinkGoogleUseCase
 import com.eddndev.purpura.domain.usecase.auth.LoginUseCase
 import com.eddndev.purpura.domain.usecase.auth.LogoutUseCase
+import com.eddndev.purpura.domain.usecase.auth.RefreshCurrentUserUseCase
+import com.eddndev.purpura.domain.usecase.auth.RequestEmailVerificationUseCase
 import com.eddndev.purpura.domain.usecase.auth.UnlinkGoogleUseCase
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -108,5 +110,54 @@ class AuthUseCasesTest {
 
         assertTrue(error is DomainError.CannotUnlinkGoogle)
         assertTrue(sessionRepository.updatedUsers.isEmpty())
+    }
+
+    @Test
+    fun `refrescar usuario consulta me y actualiza la sesion conservando el token`() = runTest {
+        sessionRepository.persist(TestData.authResult())
+        val verified = TestData.user.copy(emailVerified = true)
+        authRepository.meResult = verified
+        val useCase = RefreshCurrentUserUseCase(authRepository, sessionRepository)
+
+        val returned = useCase()
+
+        assertEquals(verified, returned)
+        assertEquals(1, authRepository.meCalls)
+        // Refresca el usuario cacheado (no re-loguea): el aviso de verificacion desaparece solo.
+        assertEquals(listOf(verified), sessionRepository.updatedUsers)
+        assertTrue(sessionRepository.sessionFlow.value?.user?.emailVerified == true)
+    }
+
+    @Test
+    fun `refrescar usuario propaga el error sin tocar la sesion`() = runTest {
+        sessionRepository.persist(TestData.authResult())
+        authRepository.meError = DomainError.Unauthorized
+        val useCase = RefreshCurrentUserUseCase(authRepository, sessionRepository)
+
+        val error = runCatching { useCase() }.exceptionOrNull()
+
+        assertTrue(error is DomainError.Unauthorized)
+        assertTrue(sessionRepository.updatedUsers.isEmpty())
+    }
+
+    @Test
+    fun `pedir verificacion delega en el repositorio sin tocar la sesion`() = runTest {
+        sessionRepository.persist(TestData.authResult())
+        val useCase = RequestEmailVerificationUseCase(authRepository)
+
+        useCase()
+
+        assertEquals(1, authRepository.requestVerificationCalls)
+        assertTrue(sessionRepository.updatedUsers.isEmpty())
+    }
+
+    @Test
+    fun `pedir verificacion propaga el error del backend`() = runTest {
+        authRepository.requestVerificationError = DomainError.Network
+        val useCase = RequestEmailVerificationUseCase(authRepository)
+
+        val error = runCatching { useCase() }.exceptionOrNull()
+
+        assertTrue(error is DomainError.Network)
     }
 }
