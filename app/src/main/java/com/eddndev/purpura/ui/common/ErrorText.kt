@@ -23,6 +23,10 @@ fun Throwable.toErrorMessageRes(): Int {
 fun DomainError.toMessageRes(): Int = when (this) {
     is DomainError.Network -> R.string.error_network
     is DomainError.EmailTaken -> R.string.error_email_taken
+    is DomainError.GoogleLinkConflict -> R.string.error_google_link_conflict
+    is DomainError.CannotUnlinkGoogle -> R.string.error_cannot_unlink_google
+    is DomainError.EmailNotVerified -> R.string.error_email_not_verified
+    is DomainError.InvalidGoogleToken -> R.string.error_invalid_google_token
     is DomainError.InvalidCredential -> R.string.error_invalid_credential
     is DomainError.Unauthorized -> R.string.error_unauthorized
     is DomainError.EventNotFound -> R.string.error_event_not_found

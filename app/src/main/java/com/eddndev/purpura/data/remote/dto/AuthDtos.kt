@@ -29,5 +29,9 @@ data class UserDto(
     val email: String,
     val nombre: String,
     val authProvider: String,
+    // Default false: el usuario cacheado por versiones anteriores no traia esta clave; Moshi usa el
+    // default al deserializar ese JSON viejo. La invariante "origen Google => vinculado" la reconstruye
+    // el mapper, asi que un cache previo a esta version no muestra Vincular a una cuenta Google.
+    val googleLinked: Boolean = false,
     val createdAt: String,
 )

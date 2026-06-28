@@ -50,6 +50,10 @@ class ProblemErrorAdapter @Inject constructor(moshi: Moshi) {
             "event_not_found" -> DomainError.EventNotFound
             "user_not_found" -> DomainError.UserNotFound
             "email_taken" -> DomainError.EmailTaken
+            "google_link_conflict" -> DomainError.GoogleLinkConflict
+            "cannot_unlink_google" -> DomainError.CannotUnlinkGoogle
+            "email_not_verified" -> DomainError.EmailNotVerified
+            "invalid_google_token" -> DomainError.InvalidGoogleToken
             "invalid_credential" -> DomainError.InvalidCredential
             "unauthorized" -> DomainError.Unauthorized
             "validation_failed" -> DomainError.Validation(problem.errors.orEmpty().map { it.toFieldError() })

@@ -9,6 +9,7 @@ import com.eddndev.purpura.data.remote.interceptor.ProblemErrorAdapter
 import com.eddndev.purpura.data.remote.mapper.AuthRemoteMapper
 import com.eddndev.purpura.di.IoDispatcher
 import com.eddndev.purpura.domain.model.AuthResult
+import com.eddndev.purpura.domain.model.User
 import com.eddndev.purpura.domain.repository.AuthRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -57,4 +58,20 @@ class AuthRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    // Vincular/Desvincular Google devuelven el usuario actualizado (200 con cuerpo). El refresco de
+    // la sesion local (conservando el token) lo hace el caso de uso via SessionRepository.
+    override suspend fun linkGoogle(idToken: String): User =
+        withContext(io) {
+            errorAdapter.call {
+                authMapper.toUser(accountApi.linkGoogle(GoogleAuthRequest(idToken)))
+            }
+        }
+
+    override suspend fun unlinkGoogle(): User =
+        withContext(io) {
+            errorAdapter.call {
+                authMapper.toUser(accountApi.unlinkGoogle())
+            }
+        }
 }
