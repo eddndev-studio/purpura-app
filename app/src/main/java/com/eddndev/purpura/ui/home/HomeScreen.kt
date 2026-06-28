@@ -3,8 +3,10 @@ package com.eddndev.purpura.ui.home
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -54,6 +56,9 @@ fun HomeScreen(
     onEventClick: (Event) -> Unit,
     onErrorShown: () -> Unit,
     modifier: Modifier = Modifier,
+    // Aviso opcional sobre la lista (p.ej. "verifica tu correo"). Vacio por defecto: la pantalla no
+    // sabe de verificacion; el Fragment inyecta el banner ya cableado a su propio ViewModel.
+    banner: @Composable () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
@@ -94,38 +99,41 @@ fun HomeScreen(
             )
         },
     ) { innerPadding ->
-        Crossfade(
-            targetState = phase,
-            animationSpec = tween(200),
-            label = "homePhase",
-            modifier = Modifier.padding(innerPadding).fillMaxSize(),
-        ) { current ->
-            when (current) {
-                HomePhase.Loading -> SkeletonList(
-                    count = 4,
-                    modifier = Modifier.padding(
-                        horizontal = Spacing.screenH,
-                        vertical = Spacing.sm,
-                    ),
-                )
+        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+            banner()
+            Crossfade(
+                targetState = phase,
+                animationSpec = tween(200),
+                label = "homePhase",
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            ) { current ->
+                when (current) {
+                    HomePhase.Loading -> SkeletonList(
+                        count = 4,
+                        modifier = Modifier.padding(
+                            horizontal = Spacing.screenH,
+                            vertical = Spacing.sm,
+                        ),
+                    )
 
-                HomePhase.Empty -> EmptyState(
-                    icon = Icons.Outlined.CalendarMonth,
-                    title = stringResource(R.string.home_empty_title),
-                    body = stringResource(R.string.placeholder_home),
-                    action = {
-                        Button(onClick = onAddEvent, shape = Pill) {
-                            Text(stringResource(R.string.empty_create_event))
-                        }
-                    },
-                )
+                    HomePhase.Empty -> EmptyState(
+                        icon = Icons.Outlined.CalendarMonth,
+                        title = stringResource(R.string.home_empty_title),
+                        body = stringResource(R.string.placeholder_home),
+                        action = {
+                            Button(onClick = onAddEvent, shape = Pill) {
+                                Text(stringResource(R.string.empty_create_event))
+                            }
+                        },
+                    )
 
-                HomePhase.Content -> PullToRefreshBox(
-                    isRefreshing = state.isLoading,
-                    onRefresh = onRefresh,
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    EventList(state.events, listState, onEventClick)
+                    HomePhase.Content -> PullToRefreshBox(
+                        isRefreshing = state.isLoading,
+                        onRefresh = onRefresh,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        EventList(state.events, listState, onEventClick)
+                    }
                 }
             }
         }

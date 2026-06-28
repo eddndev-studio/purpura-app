@@ -66,6 +66,13 @@
     <string name="account_unlink_cancel">Cancelar</string>
     <string name="account_google_updating">Actualizando…</string>
     <string name="account_link_google_failed">No se completó la vinculación con Google.</string>
+    <!-- Aviso "verifica tu correo" en Inicio (verificación de correo). -->
+    <string name="account_verify_title">Verifica tu correo</string>
+    <string name="account_verify_body">Confirma %1$s para proteger tu cuenta.</string>
+    <string name="account_verify_action">Enviar</string>
+    <string name="account_verify_sent_title">Revisa tu correo</string>
+    <string name="account_verify_sent_body">Te enviamos un enlace de verificación a %1$s.</string>
+    <string name="account_verify_resend">Reenviar</string>
     <string name="account_version">Versión %1$s</string>
     <string name="account_default_name">Tu cuenta</string>
     <string name="account_logout">Cerrar sesión</string>
