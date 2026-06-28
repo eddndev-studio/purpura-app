@@ -53,6 +53,19 @@
     <string name="account_restore_desc">Recupera tus eventos desde un respaldo</string>
     <string name="account_about">Acerca de</string>
     <string name="account_about_desc">Información de la app y créditos</string>
+    <!-- Inicio de sesion: vincular/desvincular Google -->
+    <string name="account_section_login">Inicio de sesión</string>
+    <string name="account_link_google">Vincular con Google</string>
+    <string name="account_link_google_desc">Entra también con tu cuenta de Google</string>
+    <string name="account_google_linked">Google vinculado</string>
+    <string name="account_google_linked_desc">Tu cuenta de Google está conectada</string>
+    <string name="account_unlink_google">Desvincular</string>
+    <string name="account_unlink_title">Desvincular Google</string>
+    <string name="account_unlink_message">Dejarás de poder entrar con Google. Podrás volver a vincularlo cuando quieras.</string>
+    <string name="account_unlink_confirm">Desvincular</string>
+    <string name="account_unlink_cancel">Cancelar</string>
+    <string name="account_google_updating">Actualizando…</string>
+    <string name="account_link_google_failed">No se completó la vinculación con Google.</string>
     <string name="account_version">Versión %1$s</string>
     <string name="account_default_name">Tu cuenta</string>
     <string name="account_logout">Cerrar sesión</string>
@@ -139,6 +152,10 @@
     <string name="error_validation">Revisa los datos e intenta de nuevo.</string>
     <string name="error_event_not_found">El evento ya no existe.</string>
     <string name="error_email_taken">Ese correo ya está registrado.</string>
+    <string name="error_google_link_conflict">Esa cuenta de Google ya está vinculada a otro usuario.</string>
+    <string name="error_cannot_unlink_google">Define una contraseña antes de desvincular Google.</string>
+    <string name="error_email_not_verified">Verifica tu correo de Google antes de continuar.</string>
+    <string name="error_invalid_google_token">No se pudo validar tu cuenta de Google. Intenta de nuevo.</string>
     <string name="error_invalid_credential">Correo o contraseña incorrectos.</string>
     <string name="error_unauthorized">Tu sesión expiró. Inicia sesión de nuevo.</string>
     <string name="error_unexpected">Ocurrió un error. Intenta más tarde.</string>

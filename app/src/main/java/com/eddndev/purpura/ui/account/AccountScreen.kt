@@ -1,17 +1,13 @@
 package com.eddndev.purpura.ui.account
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
@@ -19,7 +15,7 @@ import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.LinkOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -47,6 +42,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eddndev.purpura.R
+import com.eddndev.purpura.domain.model.AuthProvider
 import com.eddndev.purpura.domain.model.Session
 import com.eddndev.purpura.ui.compose.PurpuraListRow
 import com.eddndev.purpura.ui.compose.PurpuraScreen
@@ -68,6 +64,8 @@ fun AccountScreen(
     onBackup: () -> Unit,
     onRestore: () -> Unit,
     onAbout: () -> Unit,
+    onLinkGoogle: () -> Unit,
+    onUnlinkGoogle: () -> Unit,
     onLogout: () -> Unit,
     onDeleteAccount: () -> Unit,
     onErrorShown: () -> Unit,
@@ -75,9 +73,14 @@ fun AccountScreen(
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showUnlinkDialog by remember { mutableStateOf(false) }
     val errorColor = MaterialTheme.colorScheme.error
     val snackbarHostState = remember { SnackbarHostState() }
     val deleting = uiState.isDeletingAccount
+    val updatingGoogle = uiState.isUpdatingGoogleLink
+    // Mientras una accion con progreso propio (borrado o vinculacion) esta en vuelo, se deshabilita
+    // TODO lo demas: las dos no deben solaparse y el resto no debe dispararse encima.
+    val busy = deleting || updatingGoogle
     val deletingDesc = stringResource(R.string.account_deleting)
 
     // Aviso de un solo uso si el borrado de cuenta falla (la sesion se conserva intacta).
@@ -129,13 +132,30 @@ fun AccountScreen(
                 onClick = onAbout,
             )
 
+            // Inicio de sesion: vincular/desvincular Google. Solo aparece con sesion cargada (la
+            // cabecera ya la asume). googleLinked y authProvider salen del usuario en sesion.
+            session?.user?.let { user ->
+                Spacer(Modifier.height(Spacing.section))
+                SectionHeader(stringResource(R.string.account_section_login))
+                AccountGoogleRow(
+                    googleLinked = user.googleLinked,
+                    // Solo una cuenta con contrasena (origen formulario) puede desvincular: una de
+                    // origen Google quedaria sin credencial. El backend lo reimpone con 409.
+                    canUnlink = user.authProvider == AuthProvider.password,
+                    updating = updatingGoogle,
+                    enabled = !busy,
+                    onLink = onLinkGoogle,
+                    onUnlink = { showUnlinkDialog = true },
+                )
+            }
+
             // Divisor con holgura simetrica: separa la zona destructiva del resto sin pegarse al boton.
             Spacer(Modifier.height(Spacing.section))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.height(Spacing.section))
             OutlinedButton(
                 onClick = { showLogoutDialog = true },
-                enabled = !deleting,
+                enabled = !busy,
                 shape = Pill,
                 // Rol de error: el cierre de sesion es destructivo, se tine de error sin perder la pill.
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = errorColor),
@@ -153,7 +173,7 @@ fun AccountScreen(
             Spacer(Modifier.height(Spacing.sm))
             TextButton(
                 onClick = { showDeleteDialog = true },
-                enabled = !deleting,
+                enabled = !busy,
                 colors = ButtonDefaults.textButtonColors(contentColor = errorColor),
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -236,62 +256,26 @@ fun AccountScreen(
             },
         )
     }
-}
 
-@Composable
-private fun AccountHeader(session: Session?) {
-    val rawName = session?.user?.nombre
-    val initials = remember(rawName) { initialsOf(rawName) }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            // Iniciales si hay nombre real; el icono Person es el reemplazo cuando aun no hay sesion.
-            if (initials.isNotEmpty()) {
-                Text(
-                    text = initials,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(28.dp),
-                )
-            }
-        }
-        Spacer(Modifier.size(Spacing.lg))
-        Column {
-            Text(
-                text = rawName?.takeIf { it.isNotBlank() }
-                    ?: stringResource(R.string.account_default_name),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            val email = session?.user?.email
-            if (!email.isNullOrBlank()) {
-                Text(
-                    text = email,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
-}
-
-// Iniciales del nombre: primera + ultima palabra (o solo la primera). Vacio si el nombre esta en
-// blanco, para que la cabecera caiga al icono Person.
-private fun initialsOf(name: String?): String {
-    val parts = name?.trim()?.split(Regex("\\s+"))?.filter { it.isNotBlank() }.orEmpty()
-    return when {
-        parts.isEmpty() -> ""
-        parts.size == 1 -> parts[0].take(1).uppercase()
-        else -> (parts.first().take(1) + parts.last().take(1)).uppercase()
+    if (showUnlinkDialog) {
+        AlertDialog(
+            onDismissRequest = { showUnlinkDialog = false },
+            icon = { Icon(Icons.Outlined.LinkOff, contentDescription = null) },
+            title = { Text(stringResource(R.string.account_unlink_title)) },
+            text = { Text(stringResource(R.string.account_unlink_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showUnlinkDialog = false
+                        onUnlinkGoogle()
+                    },
+                ) { Text(stringResource(R.string.account_unlink_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUnlinkDialog = false }) {
+                    Text(stringResource(R.string.account_unlink_cancel))
+                }
+            },
+        )
     }
 }
