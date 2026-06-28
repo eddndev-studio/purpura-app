@@ -19,6 +19,10 @@ sealed class DomainError(
     data object EventNotFound : DomainError("event_not_found")           // 404
     data object UserNotFound : DomainError("user_not_found")             // 404
     data object EmailTaken : DomainError("email_taken")                  // 409
+    data object GoogleLinkConflict : DomainError("google_link_conflict") // 409: el Google ya esta en otra cuenta
+    data object CannotUnlinkGoogle : DomainError("cannot_unlink_google") // 409: quedaria sin credencial de acceso
+    data object EmailNotVerified : DomainError("email_not_verified")     // 403: correo de Google sin verificar
+    data object InvalidGoogleToken : DomainError("invalid_google_token") // 400: idToken de Google no valido
     data object InvalidCredential : DomainError("invalid_credential")    // 401
     data object Unauthorized : DomainError("unauthorized")               // 401
     data object Network : DomainError("network")                         // sin conexion / timeout

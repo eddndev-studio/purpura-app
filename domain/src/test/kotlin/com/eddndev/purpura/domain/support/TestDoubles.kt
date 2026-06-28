@@ -33,6 +33,7 @@ object TestData {
         email = "ana@example.com",
         nombre = "Ana",
         authProvider = AuthProvider.password,
+        googleLinked = false,
         createdAt = Instant.EPOCH,
     )
 
@@ -158,6 +159,15 @@ class FakeAuthRepository : AuthRepository {
     var deleteAccountError: Throwable? = null
     var deleteAccountCalls = 0
 
+    // Vincular/Desvincular Google: el resultado por defecto es TestData.user; las pruebas pueden
+    // sustituirlo o forzar un error, y se registran las llamadas (idTokens / conteo).
+    var linkGoogleResult: User = TestData.user
+    var linkGoogleError: Throwable? = null
+    val linkGoogleCalls = mutableListOf<String>()
+    var unlinkGoogleResult: User = TestData.user
+    var unlinkGoogleError: Throwable? = null
+    var unlinkGoogleCalls = 0
+
     override suspend fun register(email: String, nombre: String, password: String): AuthResult =
         requireNotNull(loginResult) { "loginResult no configurado" }
 
@@ -174,11 +184,24 @@ class FakeAuthRepository : AuthRepository {
         deleteAccountCalls++
         deleteAccountError?.let { throw it }
     }
+
+    override suspend fun linkGoogle(idToken: String): User {
+        linkGoogleCalls += idToken
+        linkGoogleError?.let { throw it }
+        return linkGoogleResult
+    }
+
+    override suspend fun unlinkGoogle(): User {
+        unlinkGoogleCalls++
+        unlinkGoogleError?.let { throw it }
+        return unlinkGoogleResult
+    }
 }
 
 // Fake del puerto de sesion.
 class FakeSessionRepository : SessionRepository {
     val persisted = mutableListOf<AuthResult>()
+    val updatedUsers = mutableListOf<User>()
     var clearCount = 0
     val sessionFlow = MutableStateFlow<Session?>(null)
 
@@ -187,6 +210,11 @@ class FakeSessionRepository : SessionRepository {
     override suspend fun persist(result: AuthResult) {
         persisted += result
         sessionFlow.value = Session(result.accessToken, result.user)
+    }
+
+    override suspend fun updateUser(user: User) {
+        updatedUsers += user
+        sessionFlow.value?.let { sessionFlow.value = it.copy(user = user) }
     }
 
     override suspend fun currentToken(): String? = sessionFlow.value?.token
