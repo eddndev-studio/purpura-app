@@ -30,6 +30,7 @@ class AuthRemoteMapper @Inject constructor() {
             // google_sub != null). Derivarlo aqui reconstruye esa invariante para un cache viejo
             // (sin la clave googleLinked) sin esperar al siguiente login.
             googleLinked = dto.googleLinked || authProvider == AuthProvider.google,
+            emailVerified = dto.emailVerified,
             createdAt = Instant.parse(dto.createdAt),
         )
     }
@@ -40,6 +41,7 @@ class AuthRemoteMapper @Inject constructor() {
         nombre = user.nombre,
         authProvider = user.authProvider.name,
         googleLinked = user.googleLinked,
+        emailVerified = user.emailVerified,
         createdAt = user.createdAt.toString(),
     )
 }

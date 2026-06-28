@@ -237,6 +237,7 @@ class AccountViewModelTest {
             nombre = "Ana",
             authProvider = AuthProvider.password,
             googleLinked = googleLinked,
+            emailVerified = false,
             createdAt = Instant.parse("2026-01-01T00:00:00Z"),
         ),
     )
@@ -287,6 +288,10 @@ private class FakeAuthRepository : AuthRepository {
         unlinkError?.let { throw it }
         return unlinkResult
     }
+
+    override suspend fun me(): User = error("no usado en estas pruebas")
+
+    override suspend fun requestEmailVerification() = error("no usado en estas pruebas")
 }
 
 private fun linkedUser(googleLinked: Boolean) = User(
@@ -295,6 +300,7 @@ private fun linkedUser(googleLinked: Boolean) = User(
     nombre = "Ana",
     authProvider = AuthProvider.password,
     googleLinked = googleLinked,
+    emailVerified = false,
     createdAt = Instant.parse("2026-01-01T00:00:00Z"),
 )
 

@@ -74,4 +74,24 @@ class AuthRepositoryImpl @Inject constructor(
                 authMapper.toUser(accountApi.unlinkGoogle())
             }
         }
+
+    // GET /auth/me: usuario fresco (200 con cuerpo). El caso de uso refresca la sesion local.
+    override suspend fun me(): User =
+        withContext(io) {
+            errorAdapter.call {
+                authMapper.toUser(authApi.me())
+            }
+        }
+
+    // POST /auth/verify-email/request (202 sin cuerpo). Como es Response<Unit>, Retrofit no lanza por
+    // un status no-2xx: lo convertimos en HttpException para que el errorAdapter lo mapee a
+    // DomainError (mismo patron que deleteAccount). El backend identifica al usuario por la sesion.
+    override suspend fun requestEmailVerification() {
+        withContext(io) {
+            errorAdapter.call {
+                val response = authApi.requestEmailVerification()
+                if (!response.isSuccessful) throw HttpException(response)
+            }
+        }
+    }
 }
